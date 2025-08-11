@@ -12,29 +12,33 @@ const Auth: React.FC = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <div>
-                <label htmlFor="username">Username:</label>
-                <input
-                    id="username"
-                    type="text"
-                    value={username}
-                    onChange={e => setUsername(e.target.value)}
-                    required
-                />
-            </div>
-            <div>
-                <label htmlFor="password">Password:</label>
-                <input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    required
-                />
-            </div>
-            <button type="submit">Login</button>
-        </form>
+        <form onSubmit={handleSubmit} className="container mt-5" style={{ maxWidth: '400px' }}>
+  <div className="mb-3">
+    <label htmlFor="username" className="form-label">Username:</label>
+    <input
+      id="username"
+      type="text"
+      className="form-control"
+      value={username}
+      onChange={e => setUsername(e.target.value)}
+      required
+    />
+  </div>
+
+  <div className="mb-3">
+    <label htmlFor="password" className="form-label">Password:</label>
+    <input
+      id="password"
+      type="password"
+      className="form-control"
+      value={password}
+      onChange={e => setPassword(e.target.value)}
+      required
+    />
+  </div>
+
+  <button type="submit" className="btn btn-primary w-100">Login</button>
+</form>
     );
 };
 
