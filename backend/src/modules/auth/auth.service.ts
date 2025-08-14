@@ -51,6 +51,7 @@ export class AuthService {
         nom: user.nom,
         prenom: user.prenom,
         email: user.email,
+        telephone: user.telephone,
         role: user.role,
         active: user.active,
         }

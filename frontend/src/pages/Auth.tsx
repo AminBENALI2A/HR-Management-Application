@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface LoginResponse {
   message: string;
@@ -27,6 +28,8 @@ const Auth: React.FC = () => {
   const [forgotLoading, setForgotLoading] = useState(false);
   const [forgotMessage, setForgotMessage] = useState<string | null>(null);
 
+  const navigate = useNavigate();
+
   // Login form submit handler
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,6 +53,7 @@ const Auth: React.FC = () => {
       const data = res.status;
 
       console.log('User logged in:', data);
+      navigate('/users');
       // Redirect based on role (example)
       if (data.user.role === 'Super Admin') {
         console.log('Admin logged in');

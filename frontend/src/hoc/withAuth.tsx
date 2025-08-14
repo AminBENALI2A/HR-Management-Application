@@ -1,7 +1,7 @@
 // src/hoc/withAuth.tsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import checkAuth from '../scripts/checkCredentials';
+import checkAuth from '../utils/checkCredentials';
 
 export function withAuth<P extends object>(
   WrappedComponent: React.ComponentType<P>
