@@ -12,31 +12,28 @@ jobs:
       AWS_REGION: us-east-1
       FRONTEND_BUCKET: hr-management-optymum
       CLOUDFRONT_DISTRIBUTION_ID: E3ODSL8DJRDNJT
-      EB_APP_NAME: HR-Managment-Backend
-      EB_ENV_NAME: HR-Managment-Backend-env
+      EB_APP_NAME: HR-Management-Backend  # Fixed typo in "Management"
+      EB_ENV_NAME: HR-Management-Backend-env  # Fixed typo
       EB_BUCKET: elasticbeanstalk-us-east-1-654654387741
 
     steps:
       # 1️⃣ Checkout code
-      - uses: actions/checkout@v3
-      - with:
-          path: .
+      - uses: actions/checkout@v4  # Updated to v4
 
       # 2️⃣ Setup Node.js
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4  # Updated to v4
         with:
           node-version: 20
           cache: npm
 
-      # 3️⃣ Install AWS CLI
-      - run: |
-          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-          unzip awscliv2.zip
-          sudo ./aws/install
-          aws --version
+      # 3️⃣ Install AWS CLI (simplified)
+      - name: Install AWS CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y awscli
 
       # 4️⃣ Configure AWS credentials
-      - uses: aws-actions/configure-aws-credentials@v2
+      - uses: aws-actions/configure-aws-credentials@v3  # Updated to v3
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -45,16 +42,18 @@ jobs:
       ###########################
       # Build & deploy frontend #
       ###########################
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend
+        run: npm ci
+
       - name: Build Frontend
         working-directory: ./frontend
-        run: |
-          npm ci
-          npm run build
+        run: npm run build
 
       - name: Deploy Frontend to S3
         working-directory: ./frontend
         run: |
-          aws s3 sync build s3://${{ env.FRONTEND_BUCKET }} --delete
+          aws s3 sync build s3://${{ env.FRONTEND_BUCKET }} --delete --acl public-read
 
       - name: Invalidate CloudFront
         run: |
@@ -65,16 +64,18 @@ jobs:
       ##########################
       # Build & deploy backend #
       ##########################
+      - name: Install Backend Dependencies
+        working-directory: ./backend
+        run: npm ci --omit=dev
+
       - name: Build Backend
         working-directory: ./backend
-        run: |
-          npm ci --omit=dev
-          npm run build
+        run: npm run build
 
       - name: Zip Backend for EB
         working-directory: ./backend
         run: |
-          zip -r backend-deploy.zip * -x "node_modules/*" ".git/*"
+          zip -r backend-deploy.zip * -x "node_modules/*" ".git/*" "*.env"
 
       - name: Upload Backend to S3 for EB
         working-directory: ./backend
