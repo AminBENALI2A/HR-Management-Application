@@ -69,7 +69,7 @@ jobs:
       - name: Deploy Frontend to S3
         working-directory: ./frontend
         run: |
-          aws s3 sync build s3://${{ env.FRONTEND_BUCKET }} --delete --acl public-read
+          aws s3 sync build s3://${{ env.FRONTEND_BUCKET }} --delete
 
       - name: Invalidate CloudFront
         run: |
