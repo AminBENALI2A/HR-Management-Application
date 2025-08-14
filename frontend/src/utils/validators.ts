@@ -10,4 +10,4 @@ export const validateName = (name: string) =>
   /^[a-zA-ZÀ-ÿ ,.'-]+$/.test(name.trim()); // allows accents & spaces
 
 export const validatePhone = (phone: string) =>
-  /^\+?[0-9]{7,15}$/.test(phone); // +country code optional
+  /^\+[0-9]{7,15}$/.test(phone.trim()); // +country code optional

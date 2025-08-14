@@ -36,7 +36,7 @@ const UsersList: React.FC = () => {
       nom: "",
       email: "",
       telephone: "",
-      role: "User"
+      role: ""
     },
     (values) => {
       const newErrors: Partial<Record<keyof typeof values, string>> = {};
@@ -68,7 +68,7 @@ const UsersList: React.FC = () => {
       nom: "",
       email: "",
       telephone: "",
-      role: "User"
+      role: ""
     });
   };
 
@@ -296,9 +296,9 @@ const UsersList: React.FC = () => {
                             value={editForm.role || "User"}
                             onChange={handleChange}
                           >
-                            <option value="User">User</option>
-                            <option value="Manager">Manager</option>
-                            <option value="Admin">Admin</option>
+                            <option value="Ressource">Ressource</option>
+                            <option value="Gestionnaire">Gestionnaire</option>
+                            <option value="Super Admin">Super Admin</option>
                           </select>
                         
                         </div>
