@@ -15,7 +15,8 @@ jobs:
       EB_APP_NAME: HR-Management-Backend
       EB_ENV_NAME: HR-Management-Backend-env
       EB_BUCKET: elasticbeanstalk-us-east-1-654654387741
-      KEEP_VERSIONS: 3 # Number of old versions to keep
+      KEEP_VERSIONS: 3
+      SOLUTION_STACK: "64bit Amazon Linux 2023 v6.6.3 running Node.js 20"  # Version corrigée
 
     steps:
       # 1️⃣ Checkout code
@@ -71,11 +72,6 @@ jobs:
         run: |
           aws s3 sync build s3://${{ env.FRONTEND_BUCKET }} --delete
 
-      - name: Clean Old Frontend Files
-        run: |
-          # Keep only current deployment in S3 (frontend files are overwritten anyway)
-          echo "Frontend files are automatically replaced during sync, no cleanup needed"
-
       - name: Invalidate CloudFront
         run: |
           aws cloudfront create-invalidation \
@@ -91,10 +87,13 @@ jobs:
           npm install -g npm@10.8.2
           npm install -g @nestjs/cli
           npm ci --omit=dev
+          npm install --save-dev @types/cookie-parser @types/express @types/bcrypt @types/nodemailer
 
       - name: Build Backend
         working-directory: ./backend
-        run: npx nest build
+        run: |
+          sed -i "s/parseInt(process.env.DB_PORT, 10)/parseInt(process.env.DB_PORT || '5432', 10)/" src/app.module.ts
+          npx nest build
 
       - name: Zip Backend for EB
         working-directory: ./backend
@@ -108,24 +107,87 @@ jobs:
           echo "VERSION_LABEL=$VERSION_LABEL" >> $GITHUB_ENV
           aws s3 cp backend-deploy.zip s3://${{ env.EB_BUCKET }}/backend-deploy-${VERSION_LABEL}.zip
 
-      - name: Deploy to Elastic Beanstalk
+      - name: Ensure EB Application Exists
+        run: |
+          aws elasticbeanstalk create-application \
+            --application-name ${{ env.EB_APP_NAME }} \
+            --description "HR Management Backend" || echo "Application exists or was created"
+          sleep 10
+
+      - name: Deploy Application Version
         run: |
           aws elasticbeanstalk create-application-version \
             --application-name ${{ env.EB_APP_NAME }} \
             --version-label $VERSION_LABEL \
             --source-bundle S3Bucket=${{ env.EB_BUCKET }},S3Key=backend-deploy-${VERSION_LABEL}.zip
 
-          aws elasticbeanstalk update-environment \
-            --environment-name ${{ env.EB_ENV_NAME }} \
-            --version-label $VERSION_LABEL
+      - name: Create or Update Environment
+        run: |
+          # Check if environment exists with retries
+          ENV_EXISTS=false
+          for i in {1..5}; do
+            if aws elasticbeanstalk describe-environments \
+                --application-name ${{ env.EB_APP_NAME }} \
+                --environment-names ${{ env.EB_ENV_NAME }} \
+                --query 'Environments[0].Status' \
+                --output text | grep -q 'Ready'; then
+              ENV_EXISTS=true
+              break
+            fi
+            echo "Environment check attempt $i/5 - waiting..."
+            sleep 10
+          done
+
+          if [ "$ENV_EXISTS" = true ]; then
+            echo "Updating existing environment..."
+            aws elasticbeanstalk update-environment \
+              --environment-name ${{ env.EB_ENV_NAME }} \
+              --version-label $VERSION_LABEL || \
+            (echo "Update failed, attempting create..." && \
+             aws elasticbeanstalk create-environment \
+              --application-name ${{ env.EB_APP_NAME }} \
+              --environment-name ${{ env.EB_ENV_NAME }} \
+              --solution-stack-name "${{ env.SOLUTION_STACK }}" \
+              --version-label $VERSION_LABEL \
+              --option-settings '[
+                {
+                  "Namespace": "aws:elasticbeanstalk:environment",
+                  "OptionName": "EnvironmentType",
+                  "Value": "SingleInstance"
+                },
+                {
+                  "Namespace": "aws:elasticbeanstalk:application:environment",
+                  "OptionName": "NODE_ENV",
+                  "Value": "production"
+                }
+              ]')
+          else
+            echo "Creating new environment..."
+            aws elasticbeanstalk create-environment \
+              --application-name ${{ env.EB_APP_NAME }} \
+              --environment-name ${{ env.EB_ENV_NAME }} \
+              --solution-stack-name "${{ env.SOLUTION_STACK }}" \
+              --version-label $VERSION_LABEL \
+              --option-settings '[
+                {
+                  "Namespace": "aws:elasticbeanstalk:environment",
+                  "OptionName": "EnvironmentType",
+                  "Value": "SingleInstance"
+                },
+                {
+                  "Namespace": "aws:elasticbeanstalk:application:environment",
+                  "OptionName": "NODE_ENV",
+                  "Value": "production"
+                }
+              ]'
+          fi
 
       - name: Clean Old Elastic Beanstalk Versions
         run: |
-          # List all versions, sort by date, keep last KEEP_VERSIONS
           versions_to_delete=$(aws elasticbeanstalk describe-application-versions \
             --application-name ${{ env.EB_APP_NAME }} \
-            --query 'ApplicationVersions[?VersionLabel!=`$VERSION_LABEL`].VersionLabel' \
-            --output text | tr '\t' '\n' | sort | head -n -${{ env.KEEP_VERSIONS }})
+            --query "ApplicationVersions[?VersionLabel!='$VERSION_LABEL'].VersionLabel" \
+            --output text | tr '\t' '\n' | sort | head -n -${{ env.KEEP_VERSIONS }} || true)
           
           if [ -n "$versions_to_delete" ]; then
             echo "Deleting old versions:"
@@ -142,12 +204,11 @@ jobs:
 
       - name: Clean Old S3 Deployment Files
         run: |
-          # List all backend deployment zips, keep last KEEP_VERSIONS
           files_to_delete=$(aws s3api list-objects \
             --bucket ${{ env.EB_BUCKET }} \
             --prefix "backend-deploy-" \
-            --query 'Contents[].Key' \
-            --output text | tr '\t' '\n' | sort | head -n -${{ env.KEEP_VERSIONS }})
+            --query "reverse(sort_by(Contents,&LastModified))[${{ env.KEEP_VERSIONS }}:].Key" \
+            --output text || true)
           
           if [ -n "$files_to_delete" ]; then
             echo "Deleting old deployment files:"
