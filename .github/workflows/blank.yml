@@ -15,12 +15,13 @@ jobs:
       EB_APP_NAME: HR-Management-Backend
       EB_ENV_NAME: HR-Management-Backend-env
       EB_BUCKET: elasticbeanstalk-us-east-1-654654387741
+      KEEP_VERSIONS: 3 # Number of old versions to keep
 
     steps:
       # 1️⃣ Checkout code
       - uses: actions/checkout@v4
 
-      # 2️⃣ Setup Node.js with your specific versions
+      # 2️⃣ Setup Node.js
       - uses: actions/setup-node@v4
         with:
           node-version: '20.19.4'
@@ -29,12 +30,11 @@ jobs:
             frontend/package-lock.json
             backend/package-lock.json
 
-      # 3️⃣ Install/Update AWS CLI - Robust installation method
+      # 3️⃣ Install AWS CLI
       - name: Setup AWS CLI
         run: |
-          # Check if AWS CLI is installed
           if command -v aws &> /dev/null; then
-            echo "AWS CLI is already installed, updating..."
+            echo "AWS CLI already installed, updating..."
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
             unzip awscliv2.zip
             sudo ./aws/install --update
@@ -69,7 +69,12 @@ jobs:
       - name: Deploy Frontend to S3
         working-directory: ./frontend
         run: |
-          aws s3 sync build s3://${{ env.FRONTEND_BUCKET }} --delete --acl public-read
+          aws s3 sync build s3://${{ env.FRONTEND_BUCKET }} --delete
+
+      - name: Clean Old Frontend Files
+        run: |
+          # Keep only current deployment in S3 (frontend files are overwritten anyway)
+          echo "Frontend files are automatically replaced during sync, no cleanup needed"
 
       - name: Invalidate CloudFront
         run: |
@@ -84,11 +89,12 @@ jobs:
         working-directory: ./backend
         run: |
           npm install -g npm@10.8.2
+          npm install -g @nestjs/cli
           npm ci --omit=dev
 
       - name: Build Backend
         working-directory: ./backend
-        run: npm run build
+        run: npx nest build
 
       - name: Zip Backend for EB
         working-directory: ./backend
@@ -112,3 +118,43 @@ jobs:
           aws elasticbeanstalk update-environment \
             --environment-name ${{ env.EB_ENV_NAME }} \
             --version-label $VERSION_LABEL
+
+      - name: Clean Old Elastic Beanstalk Versions
+        run: |
+          # List all versions, sort by date, keep last KEEP_VERSIONS
+          versions_to_delete=$(aws elasticbeanstalk describe-application-versions \
+            --application-name ${{ env.EB_APP_NAME }} \
+            --query 'ApplicationVersions[?VersionLabel!=`$VERSION_LABEL`].VersionLabel' \
+            --output text | tr '\t' '\n' | sort | head -n -${{ env.KEEP_VERSIONS }})
+          
+          if [ -n "$versions_to_delete" ]; then
+            echo "Deleting old versions:"
+            echo "$versions_to_delete"
+            for version in $versions_to_delete; do
+              aws elasticbeanstalk delete-application-version \
+                --application-name ${{ env.EB_APP_NAME }} \
+                --version-label "$version" \
+                --delete-source-bundle
+            done
+          else
+            echo "No old versions to delete"
+          fi
+
+      - name: Clean Old S3 Deployment Files
+        run: |
+          # List all backend deployment zips, keep last KEEP_VERSIONS
+          files_to_delete=$(aws s3api list-objects \
+            --bucket ${{ env.EB_BUCKET }} \
+            --prefix "backend-deploy-" \
+            --query 'Contents[].Key' \
+            --output text | tr '\t' '\n' | sort | head -n -${{ env.KEEP_VERSIONS }})
+          
+          if [ -n "$files_to_delete" ]; then
+            echo "Deleting old deployment files:"
+            echo "$files_to_delete"
+            for file in $files_to_delete; do
+              aws s3 rm "s3://${{ env.EB_BUCKET }}/$file"
+            done
+          else
+            echo "No old deployment files to delete"
+          fi
