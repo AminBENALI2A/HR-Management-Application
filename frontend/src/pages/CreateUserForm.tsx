@@ -28,7 +28,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel }) 
     setServerError(null);
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:3000/users", {
+      const res = await fetch("http://localhost:3000/users/addUser", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -119,7 +119,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel }) 
         >
           <option>Ressource</option>
           <option>Gestionnaire</option>
-          <option>Admin</option>
+          <option>Super Admin</option>
         </select>
       </div>
 

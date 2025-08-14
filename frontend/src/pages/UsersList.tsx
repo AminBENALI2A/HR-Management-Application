@@ -22,7 +22,8 @@ const UsersList: React.FC = () => {
   const [editUserId, setEditUserId] = useState<number | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [roleFilter, setRoleFilter] = useState("");
-  
+  const [activeFilter, setActiveFilter] = useState("");
+
   // Hook for edit form validation
   const {
     values: editForm,
@@ -85,7 +86,20 @@ const UsersList: React.FC = () => {
       });
       if (!res.ok) throw new Error("Failed to load users");
       const data = await res.json();
-      setUsers(data.users);
+
+      const sortedUsers = [...data.users].sort((a, b) => {
+        // Sort by active first (true before false)
+        if (a.active !== b.active) return a.active ? -1 : 1;
+
+        // Then by nom (case-insensitive)
+        const nomCompare = a.nom.localeCompare(b.nom, "fr", { sensitivity: "base" });
+        if (nomCompare !== 0) return nomCompare;
+
+        // Finally by prenom (case-insensitive)
+        return a.prenom.localeCompare(b.prenom, "fr", { sensitivity: "base" });
+      });
+
+      setUsers(sortedUsers);
     } catch (err: any) {
       setError(err.message || "Error loading users");
     } finally {
@@ -93,15 +107,16 @@ const UsersList: React.FC = () => {
     }
   };
 
-  const handleToggleActive = async (id: number, active: boolean) => {
+  const handleToggleActive = async (email: string, active: boolean) => {
     try {
-      const res = await fetch(`http://localhost:3000/users/${id}/status`, {
+      const res = await fetch(`http://localhost:3000/users/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ active: !active })
+        body: JSON.stringify({ email: email , active: !active })
       });
       if (!res.ok) throw new Error("Failed to update status");
+      console.log("User status updated successfully");
       fetchUsers();
     } catch (err: any) {
       setError(err.message || "Error updating status");
@@ -116,7 +131,7 @@ const UsersList: React.FC = () => {
   const handleSave = async () => {
     if (!isValid) return;
     try {
-      const res = await fetch(`http://localhost:3000/users/${editUserId}`, {
+      const res = await fetch(`http://localhost:3000/users/editUser`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -126,6 +141,7 @@ const UsersList: React.FC = () => {
       setEditUserId(null);
       resetForm();
       fetchUsers();
+      //console.log(await res.json());
     } catch (err: any) {
       setError(err.message || "Error saving changes");
     }
@@ -137,7 +153,8 @@ const UsersList: React.FC = () => {
       u.prenom.toLowerCase().includes(filter.toLowerCase()) ||
       u.email.toLowerCase().includes(filter.toLowerCase()) ||
       u.role.toLowerCase().includes(filter.toLowerCase())) &&
-      (roleFilter ? u.role === roleFilter : true)
+      (roleFilter ? u.role === roleFilter : true) &&
+      (activeFilter ? u.active === (activeFilter === "active") : true)
   );
 
   return (
@@ -186,6 +203,17 @@ const UsersList: React.FC = () => {
             <option value="Gestionnaire">Gestionnaire</option>
             <option value="Super Admin">Super Admin</option>
           </select>
+          <select
+            className="form-select"
+            style={{ maxWidth: 200 }}
+            onChange={(e) => setActiveFilter(e.target.value)}
+            disabled={loading || editUserId !== null}
+          >
+            <option value="">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+
         </div>
         <button className="btn btn-primary" onClick={() => setShowCreateModal(true)} disabled={loading || editUserId !== null}>
           + Add User
@@ -210,7 +238,7 @@ const UsersList: React.FC = () => {
             {filteredUsers.map((user) => (
               <React.Fragment key={user.id}>
                 <tr>
-                  <td>{user.prenom} {user.nom}</td>
+                  <td>{user.nom} {user.prenom}</td>
                   <td>{user.email}</td>
                   <td>{user.telephone}</td>
                   <td>{user.role}</td>
@@ -231,7 +259,7 @@ const UsersList: React.FC = () => {
                     </button>
                     <button
                       className={`btn btn-sm ${user.active ? "btn-outline-danger" : "btn-outline-success"}`}
-                      onClick={() => handleToggleActive(user.id, user.active)}
+                      onClick={() => handleToggleActive(user.email, user.active)}
                       disabled={editUserId !== null}
                     >
                       {user.active ? "Deactivate" : "Activate"}
@@ -273,6 +301,7 @@ const UsersList: React.FC = () => {
                             className={`form-control ${errors.email ? "is-invalid" : ""}`}
                             value={editForm.email || ""}
                             onChange={handleChange}
+                            disabled={true}
                           />
                           {errors.email && <div className="invalid-feedback">{errors.email}</div>}
                         </div>
