@@ -107,16 +107,13 @@ jobs:
           echo "VERSION_LABEL=$VERSION_LABEL" >> $GITHUB_ENV
           aws s3 cp backend-deploy.zip s3://${{ env.EB_BUCKET }}/backend-deploy-${VERSION_LABEL}.zip
 
-      - name: Create Elastic Beanstalk Application if Missing
+      # 🔧 PERMANENT FIX STARTS HERE 🔧
+      - name: Force Create EB Application (If Missing)
         run: |
-          if ! aws elasticbeanstalk describe-applications \
-              --application-names ${{ env.EB_APP_NAME }} >/dev/null 2>&1; then
-            echo "Creating Elastic Beanstalk application..."
-            aws elasticbeanstalk create-application \
-              --application-name ${{ env.EB_APP_NAME }} \
-              --description "HR Management Backend"
-            sleep 10 # Wait for application to be fully created
-          fi
+          aws elasticbeanstalk create-application \
+            --application-name ${{ env.EB_APP_NAME }} \
+            --description "HR Management Backend" || echo "Application likely exists already"
+          sleep 5 # Brief pause to ensure application is ready
 
       - name: Deploy Application Version
         run: |
@@ -154,6 +151,7 @@ jobs:
                 }
               ]'
           fi
+      # 🔧 PERMANENT FIX ENDS HERE 🔧
 
       - name: Clean Old Elastic Beanstalk Versions
         run: |
