@@ -1,0 +1,24 @@
+css
+
+
+:root {
+  scrollbar-gutter: stable; /* New standard (Firefox/Chrome) */
+}
+
+/* Bootstrap-compatible scrollbar solution */
+html {
+  overflow-y: scroll;
+}
+body {
+  padding-right: calc(100vw - 100%);
+}
+/* Optional: Style the always-visible scrollbar to match Bootstrap's aesthetic */
+
+::-webkit-scrollbar {
+  width: 12px;
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 6px;
+}

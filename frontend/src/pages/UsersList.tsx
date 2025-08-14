@@ -21,7 +21,8 @@ const UsersList: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [editUserId, setEditUserId] = useState<number | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
-
+  const [roleFilter, setRoleFilter] = useState("");
+  
   // Hook for edit form validation
   const {
     values: editForm,
@@ -132,10 +133,11 @@ const UsersList: React.FC = () => {
 
   const filteredUsers = users.filter(
     (u) =>
-      u.nom.toLowerCase().includes(filter.toLowerCase()) ||
+      (u.nom.toLowerCase().includes(filter.toLowerCase()) ||
       u.prenom.toLowerCase().includes(filter.toLowerCase()) ||
       u.email.toLowerCase().includes(filter.toLowerCase()) ||
-      u.role.toLowerCase().includes(filter.toLowerCase())
+      u.role.toLowerCase().includes(filter.toLowerCase())) &&
+      (roleFilter ? u.role === roleFilter : true)
   );
 
   return (
@@ -163,16 +165,29 @@ const UsersList: React.FC = () => {
       )}
 
       <div className="d-flex justify-content-between mb-3">
-        <input
-          type="text"
-          className="form-control"
-          style={{ maxWidth: 300 }}
-          placeholder="Filter users..."
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          disabled={loading}
-        />
-        <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
+        <div className="d-flex gap-2">
+          <input
+            type="text"
+            className="form-control"
+            style={{ maxWidth: 300 }}
+            placeholder="Filter users..."
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            disabled={loading || editUserId !== null}
+          />
+          <select
+            className="form-select"
+            style={{ maxWidth: 200 }}
+            onChange={(e) => setRoleFilter(e.target.value)}
+            disabled={loading || editUserId !== null}
+          >
+            <option value="">All Roles</option>
+            <option value="Ressource">Ressource</option>
+            <option value="Gestionnaire">Gestionnaire</option>
+            <option value="Super Admin">Super Admin</option>
+          </select>
+        </div>
+        <button className="btn btn-primary" onClick={() => setShowCreateModal(true)} disabled={loading || editUserId !== null}>
           + Add User
         </button>
       </div>
