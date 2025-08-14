@@ -1,0 +1,91 @@
+name: Deploy Fullstack HR Management Optymum App
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: us-east-1
+      FRONTEND_BUCKET: hr-management-optymum
+      CLOUDFRONT_DISTRIBUTION_ID: E3ODSL8DJRDNJT
+      EB_APP_NAME: HR-Managment-Backend
+      EB_ENV_NAME: HR-Managment-Backend-env
+      EB_BUCKET: elasticbeanstalk-us-east-1-654654387741
+
+    steps:
+      # 1️⃣ Checkout code
+      - uses: actions/checkout@v3
+
+      # 2️⃣ Setup Node.js
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: npm
+
+      # 3️⃣ Install AWS CLI
+      - run: |
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install
+          aws --version
+
+      # 4️⃣ Configure AWS credentials
+      - uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      ###########################
+      # Build & deploy frontend #
+      ###########################
+      - name: Build Frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Deploy Frontend to S3
+        run: |
+          aws s3 sync frontend/build s3://${{ env.FRONTEND_BUCKET }} --delete
+
+      - name: Invalidate CloudFront
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"
+
+      ##########################
+      # Build & deploy backend #
+      ##########################
+      - name: Build Backend
+        working-directory: backend
+        run: |
+          npm ci --omit=dev
+          npm run build
+
+      - name: Zip Backend for EB
+        working-directory: backend
+        run: |
+          zip -r backend-deploy.zip * -x "node_modules/*" ".git/*"
+
+      - name: Upload Backend to S3 for EB
+        run: |
+          VERSION_LABEL=${GITHUB_SHA::8}-$(date +%s)
+          echo "VERSION_LABEL=$VERSION_LABEL" >> $GITHUB_ENV
+          aws s3 cp backend/backend-deploy.zip s3://${{ env.EB_BUCKET }}/backend-deploy-${VERSION_LABEL}.zip
+
+      - name: Deploy to Elastic Beanstalk
+        run: |
+          aws elasticbeanstalk create-application-version \
+            --application-name ${{ env.EB_APP_NAME }} \
+            --version-label $VERSION_LABEL \
+            --source-bundle S3Bucket=${{ env.EB_BUCKET }},S3Key=backend-deploy-${VERSION_LABEL}.zip
+
+          aws elasticbeanstalk update-environment \
+            --environment-name ${{ env.EB_ENV_NAME }} \
+            --version-label $VERSION_LABEL
