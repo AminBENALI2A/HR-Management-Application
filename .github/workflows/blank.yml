@@ -44,7 +44,7 @@ jobs:
       # Build & deploy frontend #
       ###########################
       - name: Build Frontend
-        working-directory: ./frontend
+        working-directory: ./HR-Management-Application/frontend
         run: |
           npm ci
           npm run build
@@ -63,13 +63,13 @@ jobs:
       # Build & deploy backend #
       ##########################
       - name: Build Backend
-        working-directory: ./backend
+        working-directory: ./HR-Management-Application/backend
         run: |
           npm ci --omit=dev
           npm run build
 
       - name: Zip Backend for EB
-        working-directory: ./backend
+        working-directory: ./HR-Management-Application/backend
         run: |
           zip -r backend-deploy.zip * -x "node_modules/*" ".git/*"
 
