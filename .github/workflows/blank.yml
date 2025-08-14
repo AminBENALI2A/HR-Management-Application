@@ -29,12 +29,21 @@ jobs:
             frontend/package-lock.json
             backend/package-lock.json
 
-      # 3️⃣ Install AWS CLI - CORRECTED METHOD
-      - name: Install AWS CLI
+      # 3️⃣ Install/Update AWS CLI - Robust installation method
+      - name: Setup AWS CLI
         run: |
-          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-          unzip awscliv2.zip
-          sudo ./aws/install
+          # Check if AWS CLI is installed
+          if command -v aws &> /dev/null; then
+            echo "AWS CLI is already installed, updating..."
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install --update
+          else
+            echo "Installing AWS CLI..."
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
+          fi
           aws --version
 
       # 4️⃣ Configure AWS credentials
