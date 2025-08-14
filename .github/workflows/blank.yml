@@ -16,7 +16,7 @@ jobs:
       EB_ENV_NAME: HR-Management-Backend-env
       EB_BUCKET: elasticbeanstalk-us-east-1-654654387741
       KEEP_VERSIONS: 3
-      SOLUTION_STACK: "64bit Amazon Linux 2023 v4.3.1 running Node.js 20"
+      SOLUTION_STACK: "64bit Amazon Linux 2023 v6.6.3 running Node.js 20"  # Version corrigée
 
     steps:
       # 1️⃣ Checkout code
@@ -107,14 +107,12 @@ jobs:
           echo "VERSION_LABEL=$VERSION_LABEL" >> $GITHUB_ENV
           aws s3 cp backend-deploy.zip s3://${{ env.EB_BUCKET }}/backend-deploy-${VERSION_LABEL}.zip
 
-      # 🔧 SOLUTION ROBUSTE 🔧
       - name: Ensure EB Application Exists
         run: |
-          # Force application creation (ignores errors if exists)
           aws elasticbeanstalk create-application \
             --application-name ${{ env.EB_APP_NAME }} \
-            --description "HR Management Backend" || true
-          sleep 10 # Wait for consistency
+            --description "HR Management Backend" || echo "Application exists or was created"
+          sleep 10
 
       - name: Deploy Application Version
         run: |
@@ -123,46 +121,66 @@ jobs:
             --version-label $VERSION_LABEL \
             --source-bundle S3Bucket=${{ env.EB_BUCKET }},S3Key=backend-deploy-${VERSION_LABEL}.zip
 
-      - name: Handle Environment Deployment
+      - name: Create or Update Environment
         run: |
-          # Check environment status with retries
+          # Check if environment exists with retries
+          ENV_EXISTS=false
           for i in {1..5}; do
-            ENV_STATUS=$(aws elasticbeanstalk describe-environments \
-              --application-name ${{ env.EB_APP_NAME }} \
-              --environment-names ${{ env.EB_ENV_NAME }} \
-              --query 'Environments[0].Status' \
-              --output text || echo "NotFound")
-            
-            if [ "$ENV_STATUS" = "Ready" ]; then
-              echo "Updating existing environment..."
-              aws elasticbeanstalk update-environment \
-                --environment-name ${{ env.EB_ENV_NAME }} \
-                --version-label $VERSION_LABEL && exit 0
-            elif [ "$ENV_STATUS" = "NotFound" ]; then
+            if aws elasticbeanstalk describe-environments \
+                --application-name ${{ env.EB_APP_NAME }} \
+                --environment-names ${{ env.EB_ENV_NAME }} \
+                --query 'Environments[0].Status' \
+                --output text | grep -q 'Ready'; then
+              ENV_EXISTS=true
               break
             fi
-            echo "Retrying environment check ($i/5)..."
+            echo "Environment check attempt $i/5 - waiting..."
             sleep 10
           done
 
-          echo "Creating new environment..."
-          aws elasticbeanstalk create-environment \
-            --application-name ${{ env.EB_APP_NAME }} \
-            --environment-name ${{ env.EB_ENV_NAME }} \
-            --solution-stack-name "${{ env.SOLUTION_STACK }}" \
-            --version-label $VERSION_LABEL \
-            --option-settings '[
-              {
-                "Namespace": "aws:elasticbeanstalk:environment",
-                "OptionName": "EnvironmentType",
-                "Value": "SingleInstance"
-              },
-              {
-                "Namespace": "aws:elasticbeanstalk:application:environment",
-                "OptionName": "NODE_ENV",
-                "Value": "production"
-              }
-            ]'
+          if [ "$ENV_EXISTS" = true ]; then
+            echo "Updating existing environment..."
+            aws elasticbeanstalk update-environment \
+              --environment-name ${{ env.EB_ENV_NAME }} \
+              --version-label $VERSION_LABEL || \
+            (echo "Update failed, attempting create..." && \
+             aws elasticbeanstalk create-environment \
+              --application-name ${{ env.EB_APP_NAME }} \
+              --environment-name ${{ env.EB_ENV_NAME }} \
+              --solution-stack-name "${{ env.SOLUTION_STACK }}" \
+              --version-label $VERSION_LABEL \
+              --option-settings '[
+                {
+                  "Namespace": "aws:elasticbeanstalk:environment",
+                  "OptionName": "EnvironmentType",
+                  "Value": "SingleInstance"
+                },
+                {
+                  "Namespace": "aws:elasticbeanstalk:application:environment",
+                  "OptionName": "NODE_ENV",
+                  "Value": "production"
+                }
+              ]')
+          else
+            echo "Creating new environment..."
+            aws elasticbeanstalk create-environment \
+              --application-name ${{ env.EB_APP_NAME }} \
+              --environment-name ${{ env.EB_ENV_NAME }} \
+              --solution-stack-name "${{ env.SOLUTION_STACK }}" \
+              --version-label $VERSION_LABEL \
+              --option-settings '[
+                {
+                  "Namespace": "aws:elasticbeanstalk:environment",
+                  "OptionName": "EnvironmentType",
+                  "Value": "SingleInstance"
+                },
+                {
+                  "Namespace": "aws:elasticbeanstalk:application:environment",
+                  "OptionName": "NODE_ENV",
+                  "Value": "production"
+                }
+              ]'
+          fi
 
       - name: Clean Old Elastic Beanstalk Versions
         run: |
