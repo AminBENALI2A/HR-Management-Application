@@ -21,6 +21,7 @@ export class AuthService {
   ) {}
 
   async login(loginDto: LoginDto, res: Response) {
+    console.log('Logging in...');
     const user = await this.usersRepository.findOneBy({ email: loginDto.email });
     if (!user) {
       throw new UnauthorizedException('Invalid email or password');
@@ -34,6 +35,7 @@ export class AuthService {
     if (!user.active) {
       throw new UnauthorizedException('Invalid email or password');
     }
+    console.log('Found user:', user.email);
 
     // Create JWT payload with relevant info
     const payload = { sub: user.id, email: user.email};
