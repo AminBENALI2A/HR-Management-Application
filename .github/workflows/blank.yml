@@ -19,6 +19,8 @@ jobs:
     steps:
       # 1️⃣ Checkout code
       - uses: actions/checkout@v3
+      - with:
+          path: .
 
       # 2️⃣ Setup Node.js
       - uses: actions/setup-node@v3
