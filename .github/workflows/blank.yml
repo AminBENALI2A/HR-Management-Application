@@ -107,7 +107,7 @@ jobs:
           echo "VERSION_LABEL=$VERSION_LABEL" >> $GITHUB_ENV
           aws s3 cp backend-deploy.zip s3://${{ env.EB_BUCKET }}/backend-deploy-${VERSION_LABEL}.zip
 
-      - name: Ensure Elastic Beanstalk Application Exists
+      - name: Create Elastic Beanstalk Application if Missing
         run: |
           if ! aws elasticbeanstalk describe-applications \
               --application-names ${{ env.EB_APP_NAME }} >/dev/null 2>&1; then
@@ -115,20 +115,32 @@ jobs:
             aws elasticbeanstalk create-application \
               --application-name ${{ env.EB_APP_NAME }} \
               --description "HR Management Backend"
-          else
-            echo "Application already exists"
+            sleep 10 # Wait for application to be fully created
           fi
 
-      - name: Ensure Elastic Beanstalk Environment Exists
+      - name: Deploy Application Version
         run: |
-          if ! aws elasticbeanstalk describe-environments \
+          aws elasticbeanstalk create-application-version \
+            --application-name ${{ env.EB_APP_NAME }} \
+            --version-label $VERSION_LABEL \
+            --source-bundle S3Bucket=${{ env.EB_BUCKET }},S3Key=backend-deploy-${VERSION_LABEL}.zip
+
+      - name: Create or Update Environment
+        run: |
+          if aws elasticbeanstalk describe-environments \
               --application-name ${{ env.EB_APP_NAME }} \
               --environment-names ${{ env.EB_ENV_NAME }} >/dev/null 2>&1; then
-            echo "Creating Elastic Beanstalk environment..."
+            echo "Updating existing environment..."
+            aws elasticbeanstalk update-environment \
+              --environment-name ${{ env.EB_ENV_NAME }} \
+              --version-label $VERSION_LABEL
+          else
+            echo "Creating new environment..."
             aws elasticbeanstalk create-environment \
               --application-name ${{ env.EB_APP_NAME }} \
               --environment-name ${{ env.EB_ENV_NAME }} \
               --solution-stack-name "${{ env.SOLUTION_STACK }}" \
+              --version-label $VERSION_LABEL \
               --option-settings '[
                 {
                   "Namespace": "aws:elasticbeanstalk:environment",
@@ -141,25 +153,7 @@ jobs:
                   "Value": "production"
                 }
               ]'
-            # Wait for environment to be ready
-            echo "Waiting for environment to be ready..."
-            aws elasticbeanstalk wait environment-exists \
-              --application-name ${{ env.EB_APP_NAME }} \
-              --environment-name ${{ env.EB_ENV_NAME }}
-          else
-            echo "Environment already exists"
           fi
-
-      - name: Deploy to Elastic Beanstalk
-        run: |
-          aws elasticbeanstalk create-application-version \
-            --application-name ${{ env.EB_APP_NAME }} \
-            --version-label $VERSION_LABEL \
-            --source-bundle S3Bucket=${{ env.EB_BUCKET }},S3Key=backend-deploy-${VERSION_LABEL}.zip
-
-          aws elasticbeanstalk update-environment \
-            --environment-name ${{ env.EB_ENV_NAME }} \
-            --version-label $VERSION_LABEL
 
       - name: Clean Old Elastic Beanstalk Versions
         run: |
