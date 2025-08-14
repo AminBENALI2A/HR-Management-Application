@@ -13,14 +13,14 @@ import { UsersModule } from './modules/users/users.module';
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'admin',
-      password: 'adminpassword',
-      database: 'hr_management',
-      entities: [__dirname + '/entities/*.js'],  // or .ts if using ts-node
-      synchronize: false,  // set to false in production!
-      logging: true,      // optional, shows SQL logs in console
+      host: process.env.DB_HOST || 'localhost',
+      port: parseInt(process.env.DB_PORT, 10) || 5432,
+      username: process.env.DB_USER || 'admin',
+      password: process.env.DB_PASSWORD || 'adminpassword',
+      database: process.env.DB_NAME || 'hr_management',
+      entities: [__dirname + '/entities/*.js'],  // use .ts if running ts-node locally
+      synchronize: false,  // keep false in production
+      logging: true,
     }),
     AuthModule,
     UsersModule
