@@ -44,14 +44,15 @@ jobs:
       # Build & deploy frontend #
       ###########################
       - name: Build Frontend
-        working-directory: ./HR-Management-Application/frontend
+        working-directory: ./frontend
         run: |
           npm ci
           npm run build
 
       - name: Deploy Frontend to S3
+        working-directory: ./frontend
         run: |
-          aws s3 sync frontend/build s3://${{ env.FRONTEND_BUCKET }} --delete
+          aws s3 sync build s3://${{ env.FRONTEND_BUCKET }} --delete
 
       - name: Invalidate CloudFront
         run: |
@@ -63,21 +64,22 @@ jobs:
       # Build & deploy backend #
       ##########################
       - name: Build Backend
-        working-directory: ./HR-Management-Application/backend
+        working-directory: ./backend
         run: |
           npm ci --omit=dev
           npm run build
 
       - name: Zip Backend for EB
-        working-directory: ./HR-Management-Application/backend
+        working-directory: ./backend
         run: |
           zip -r backend-deploy.zip * -x "node_modules/*" ".git/*"
 
       - name: Upload Backend to S3 for EB
+        working-directory: ./backend
         run: |
           VERSION_LABEL=${GITHUB_SHA::8}-$(date +%s)
           echo "VERSION_LABEL=$VERSION_LABEL" >> $GITHUB_ENV
-          aws s3 cp backend/backend-deploy.zip s3://${{ env.EB_BUCKET }}/backend-deploy-${VERSION_LABEL}.zip
+          aws s3 cp backend-deploy.zip s3://${{ env.EB_BUCKET }}/backend-deploy-${VERSION_LABEL}.zip
 
       - name: Deploy to Elastic Beanstalk
         run: |
