@@ -29,7 +29,6 @@ const UsersList: React.FC = () => {
     values: editForm,
     errors,
     handleChange,
-    handleSubmit,
     setValues
   } = useFormValidation(
     {
