@@ -35,7 +35,9 @@ const Auth: React.FC = () => {
     e.preventDefault();
     setError(null);
     setLoading(true);
-
+    console.log('Logging in...');
+    console.log('Email:', email);
+    console.log(`${process.env.REACT_APP_API_URL}/auth/login`);
     try {
       const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/login`, {
         method: 'POST',
