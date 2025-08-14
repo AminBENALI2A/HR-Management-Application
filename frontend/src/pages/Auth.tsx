@@ -37,7 +37,7 @@ const Auth: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:3000/auth/login', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/login`, {
         method: 'POST',
         credentials: 'include', // VERY important
         headers: { 'Content-Type': 'application/json' },
@@ -75,7 +75,7 @@ const Auth: React.FC = () => {
     setForgotLoading(true);
 
     try {
-      const response = await fetch('http://localhost:3000/auth/forgot-password', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: forgotEmail }),

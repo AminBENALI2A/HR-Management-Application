@@ -80,7 +80,7 @@ const UsersList: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("http://localhost:3000/users", {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/users`, {
         credentials: "include"
       });
       if (!res.ok) throw new Error("Failed to load users");
@@ -108,7 +108,7 @@ const UsersList: React.FC = () => {
 
   const handleToggleActive = async (email: string, active: boolean) => {
     try {
-      const res = await fetch(`http://localhost:3000/users/status`, {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/users/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -130,7 +130,7 @@ const UsersList: React.FC = () => {
   const handleSave = async () => {
     if (!isValid) return;
     try {
-      const res = await fetch(`http://localhost:3000/users/editUser`, {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/users/editUser`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
