@@ -91,10 +91,16 @@ jobs:
           npm install -g npm@10.8.2
           npm install -g @nestjs/cli
           npm ci --omit=dev
-
+          
+          # Install required type definitions as dev dependencies
+          npm install --save-dev @types/cookie-parser @types/express @types/bcrypt @types/nodemailer
+      
       - name: Build Backend
         working-directory: ./backend
-        run: npx nest build
+        run: |
+          # Fix environment variable typing issue
+          sed -i "s/parseInt(process.env.DB_PORT, 10)/parseInt(process.env.DB_PORT || '5432', 10)/" src/app.module.ts
+          npx nest build
 
       - name: Zip Backend for EB
         working-directory: ./backend
