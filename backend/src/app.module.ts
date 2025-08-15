@@ -4,6 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './modules/auth/auth.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { UsersModule } from './modules/users/users.module';
+import { Users } from './entities/Users';
+import { PasswordResetToken } from './entities/PasswordResetToken';
 
 @Module({
   imports: [
@@ -19,7 +21,7 @@ import { UsersModule } from './modules/users/users.module';
       username: 'hrmanagement',
       password: 'hrmanagement',
       database: 'hr_management',
-      entities: [__dirname + '/**/*.entity{.ts,.js}'],
+      entities: [Users, PasswordResetToken],
       ssl: {
         rejectUnauthorized: false
       },
