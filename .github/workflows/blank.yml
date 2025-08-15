@@ -12,8 +12,8 @@ jobs:
       AWS_REGION: us-east-1
       FRONTEND_BUCKET: hr-management-optymum
       CLOUDFRONT_DISTRIBUTION_ID: E3ODSL8DJRDNJT
-      EB_APP_NAME: HR-Management-Backend
-      EB_ENV_NAME: HR-Management-Backend-env
+      EB_APP_NAME: Backend-HR-Managment
+      EB_ENV_NAME: Backend-HR-Managment-env
       EB_BUCKET: elasticbeanstalk-us-east-1-654654387741
       KEEP_VERSIONS: 3
       SOLUTION_STACK: "64bit Amazon Linux 2023 v6.6.3 running Node.js 20"  # Version corrigée
@@ -64,7 +64,7 @@ jobs:
           npm ci
       - name: Set Frontend Env
         run: |
-          echo "REACT_APP_API_URL=https://HR-Managment-Backend-env.eba-qamtuckt.us-east-1.elasticbeanstalk.com" >> $GITHUB_ENV
+          echo "REACT_APP_API_URL=https://backend-hr-managment-env.eba-xunhtune.us-east-1.elasticbeanstalk.com" >> $GITHUB_ENV
 
       - name: Build Frontend
         working-directory: ./frontend
