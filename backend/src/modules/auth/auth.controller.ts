@@ -16,6 +16,10 @@ export interface AuthenticatedRequest extends Request {
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
+  @Get('health')
+  async healthCheck() {
+    return this.authService.runningCheck();
+  }
 
   @Post('login')
   async login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res: Response) {

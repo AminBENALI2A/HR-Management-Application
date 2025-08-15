@@ -19,7 +19,9 @@ export class AuthService {
     private passwordResetService: PasswordResetService,
     private readonly mailService: MailService,
   ) {}
-
+  async runningCheck() {
+    return { status: 'running' };
+  }
   async login(loginDto: LoginDto, res: Response) {
     console.log('Logging in...');
     const user = await this.usersRepository.findOneBy({ email: loginDto.email });
