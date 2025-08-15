@@ -18,12 +18,6 @@ import { UsersModule } from './modules/users/users.module';
       username: process.env.DB_USER || 'admin',
       password: process.env.DB_PASSWORD || 'adminpassword',
       database: process.env.DB_NAME || 'hr_management',
-      ssl: {
-      rejectUnauthorized: false // for AWS RDS
-        },
-      extra: {
-        ssl: true
-      },
       entities: [__dirname + '/entities/*.js'],  // use .ts if running ts-node locally
       synchronize: false,  // keep false in production
       logging: true,
