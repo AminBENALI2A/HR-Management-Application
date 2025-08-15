@@ -12,8 +12,8 @@ jobs:
       AWS_REGION: us-east-1
       FRONTEND_BUCKET: hr-management-optymum
       CLOUDFRONT_DISTRIBUTION_ID: E3ODSL8DJRDNJT
-      EB_APP_NAME: HR-Management-Backend
-      EB_ENV_NAME: HR-Management-Backend-env
+      EB_APP_NAME: Backend-HR-Managment
+      EB_ENV_NAME: Backend-HR-Managment-env
       EB_BUCKET: elasticbeanstalk-us-east-1-654654387741
       KEEP_VERSIONS: 3
       SOLUTION_STACK: "64bit Amazon Linux 2023 v6.6.3 running Node.js 20"  # Version corrigée
