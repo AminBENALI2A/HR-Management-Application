@@ -6,8 +6,8 @@ import cookieParser from 'cookie-parser';
 async function bootstrap() {
 
   const allowedOrigins = [
-      process.env.FRONTEND_URL,       // e.g., 'https://yourdomain.com'
-      process.env.CLOUDFRONT_URL,    // e.g., 'https://d123.cloudfront.net'
+      "https://d1pc059cxwtfw0.cloudfront.net/", // e.g., 'https://d1pc059cxwtfw0.cloudfront.net/'
+      "http://localhost:3000",    // e.g., 'https://d123.cloudfront.net'
       /\.cloudfront\.net$/,          // Wildcard for all CloudFront subdomains
     ].filter(Boolean); // Remove undefined values
 
