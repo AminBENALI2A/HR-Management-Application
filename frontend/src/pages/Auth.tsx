@@ -42,6 +42,7 @@ const Auth: React.FC = () => {
       const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/login`, {
         method: 'POST',
         credentials: 'include', // VERY important
+        referrerPolicy: "unsafe-url", // Allow mixed content
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
@@ -81,6 +82,7 @@ const Auth: React.FC = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: forgotEmail }),
+        referrerPolicy: "unsafe-url" 
       });
 
       if (!response.ok) {

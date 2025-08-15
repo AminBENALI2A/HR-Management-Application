@@ -81,7 +81,8 @@ const UsersList: React.FC = () => {
     setError(null);
     try {
       const res = await fetch(`${process.env.REACT_APP_API_URL}/users`, {
-        credentials: "include"
+        credentials: "include",
+        referrerPolicy: "unsafe-url" 
       });
       if (!res.ok) throw new Error("Failed to load users");
       const data = await res.json();
@@ -111,6 +112,7 @@ const UsersList: React.FC = () => {
       const res = await fetch(`${process.env.REACT_APP_API_URL}/users/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
+        referrerPolicy: "unsafe-url",
         credentials: "include",
         body: JSON.stringify({ email: email , active: !active })
       });
@@ -134,6 +136,7 @@ const UsersList: React.FC = () => {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
+        referrerPolicy: "unsafe-url",
         body: JSON.stringify(editForm)
       });
       if (!res.ok) throw new Error("Failed to save changes");

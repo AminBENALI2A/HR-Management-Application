@@ -31,6 +31,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel }) 
       const res = await fetch(`${process.env.REACT_APP_API_URL}/users/addUser`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        referrerPolicy: "unsafe-url",
         credentials: "include",
         body: JSON.stringify({
           prenom: values.firstName,
