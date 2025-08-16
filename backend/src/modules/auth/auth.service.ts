@@ -45,7 +45,7 @@ export class AuthService {
     res.cookie('access_token', this.jwtService.sign(payload), {
         httpOnly: true,       // Not accessible by JavaScript
         secure: true,         // Only over HTTPS
-        sameSite: 'strict',   // Mitigate CSRF
+        sameSite: 'lax',   // Mitigate CSRF
         maxAge: 24 * 60 * 60 * 1000 // 1 day
     });
 
