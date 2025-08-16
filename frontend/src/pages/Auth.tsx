@@ -39,19 +39,12 @@ const Auth: React.FC = () => {
     console.log('Email:', email);
     
     try {
-      /*const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/login`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/login`, {
         method: 'POST',
         credentials: 'include', // VERY important
         referrerPolicy: "unsafe-url", // Allow mixed content
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
-      });*/
-      const url = "http://hroptenv.eba-xunhtune.us-east-1.elasticbeanstalk.com/auth/health";
-      console.log(url);
-      const response = await fetch(url, {
-        method: 'GET',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
       });
 
       if (!response.ok) {
