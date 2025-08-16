@@ -78,7 +78,7 @@ const Auth: React.FC = () => {
     setForgotLoading(true);
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/forgot-password`, {
+      const response = await fetch(`https://d1pc059cxwtfw0.cloudfront.net/auth/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: forgotEmail }),
