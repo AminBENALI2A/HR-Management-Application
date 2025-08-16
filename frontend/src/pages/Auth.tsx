@@ -36,10 +36,9 @@ const Auth: React.FC = () => {
     setError(null);
     setLoading(true);
     console.log('Logging in...');
-    console.log('Email:', email);
     
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/login`, {
+      const response = await fetch(`https://d1pc059cxwtfw0.cloudfront.net/auth/login`, {
         method: 'POST',
         credentials: 'include', // VERY important
         referrerPolicy: "unsafe-url", // Allow mixed content
