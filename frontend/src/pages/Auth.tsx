@@ -46,7 +46,7 @@ const Auth: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });*/
-      const url = "http://hroptenv.eba-xunhtune.us-east-1.elasticbeanstalk.com/auth/health";
+      const url = "https://d1pc059cxwtfw0.cloudfront.net/auth/health";
       console.log(url);
       const response = await fetch(url, {
         method: 'GET',
