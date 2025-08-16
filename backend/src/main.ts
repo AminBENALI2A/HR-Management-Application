@@ -6,10 +6,10 @@ import cookieParser from 'cookie-parser';
 async function bootstrap() {
 
   const allowedOrigins = [
-      "https://d1pc059cxwtfw0.cloudfront.net/", // e.g., 'https://d1pc059cxwtfw0.cloudfront.net/'
-      "http://localhost:3000",    // e.g., 'https://d123.cloudfront.net'
-      /\.cloudfront\.net$/,          // Wildcard for all CloudFront subdomains
-    ].filter(Boolean); // Remove undefined values
+    "https://d1pc059cxwtfw0.cloudfront.net", // no trailing slash
+    "http://localhost:3000",
+    /\.cloudfront\.net$/,                    // wildcard for all CloudFront subdomains
+  ].filter(Boolean);
 
   const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
