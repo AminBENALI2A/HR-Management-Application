@@ -17,7 +17,7 @@ export function withAuth<P extends object>(
           setLoading(false);
           console.log('User is authenticated');
         } catch {
-          navigate('/Auth');  // ❌ redirect if not
+          navigate('/auth');  // ❌ redirect if not
         }
       })();
     }, [navigate]);
