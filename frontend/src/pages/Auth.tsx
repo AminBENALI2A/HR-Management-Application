@@ -38,7 +38,7 @@ const Auth: React.FC = () => {
     console.log('Logging in...');
     
     try {
-      const response = await fetch(`https://d1pc059cxwtfw0.cloudfront.net/auth/login`, {
+      const response = await fetch(`https://d1pc059cxwtfw0.cloudfront.net/api/auth/login`, {
         method: 'POST',
         credentials: 'include', // VERY important
         referrerPolicy: "unsafe-url", // Allow mixed content
@@ -78,7 +78,7 @@ const Auth: React.FC = () => {
     setForgotLoading(true);
 
     try {
-      const response = await fetch(`https://d1pc059cxwtfw0.cloudfront.net/auth/forgot-password`, {
+      const response = await fetch(`https://d1pc059cxwtfw0.cloudfront.net/api/auth/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: forgotEmail }),

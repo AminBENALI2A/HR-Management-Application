@@ -13,7 +13,7 @@ export interface AuthenticatedRequest extends Request {
     role: string;
   };
 }
-@Controller('auth')
+@Controller('/api/auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
   @Get('health')

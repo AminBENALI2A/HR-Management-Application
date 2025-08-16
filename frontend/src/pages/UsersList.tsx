@@ -80,7 +80,7 @@ const UsersList: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`https://d1pc059cxwtfw0.cloudfront.net/users`, {
+      const res = await fetch(`https://d1pc059cxwtfw0.cloudfront.net/api/users`, {
         credentials: "include",
         referrerPolicy: "unsafe-url" 
       });
@@ -109,7 +109,7 @@ const UsersList: React.FC = () => {
 
   const handleToggleActive = async (email: string, active: boolean) => {
     try {
-      const res = await fetch(`https://d1pc059cxwtfw0.cloudfront.net/users/status`, {
+      const res = await fetch(`https://d1pc059cxwtfw0.cloudfront.net/api/users/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         referrerPolicy: "unsafe-url",
@@ -132,7 +132,7 @@ const UsersList: React.FC = () => {
   const handleSave = async () => {
     if (!isValid) return;
     try {
-      const res = await fetch(`https://d1pc059cxwtfw0.cloudfront.net/users/editUser`, {
+      const res = await fetch(`https://d1pc059cxwtfw0.cloudfront.net/api/users/editUser`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

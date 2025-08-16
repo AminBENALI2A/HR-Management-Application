@@ -6,7 +6,7 @@ import { Roles } from '../../guards/roles.decorator';
 import { CreateUserDto } from '../../dto/create-user.dto';
 import { EditUserDto } from '../../dto/edit-user.dto';
 
-@Controller('users')
+@Controller('/api/users')
 @UseGuards(AuthGuard, RolesGuard)
 export class UsersController {
   constructor(private usersService: UsersService) {} // <-- lowercase

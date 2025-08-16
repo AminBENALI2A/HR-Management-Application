@@ -38,7 +38,7 @@ const ResetPassword: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/reset-password`, {
+      const response = await fetch(`https://d1pc059cxwtfw0.cloudfront.net/api/auth/reset-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, newPassword: password }),

@@ -28,7 +28,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel }) 
     setServerError(null);
     setLoading(true);
     try {
-      const res = await fetch(`https://d1pc059cxwtfw0.cloudfront.net/users/addUser`, {
+      const res = await fetch(`https://d1pc059cxwtfw0.cloudfront.net/api/users/addUser`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         referrerPolicy: "unsafe-url",
