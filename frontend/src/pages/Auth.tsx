@@ -37,7 +37,7 @@ const Auth: React.FC = () => {
     setLoading(true);
     console.log('Logging in...');
     console.log('Email:', email);
-    console.log(`${process.env.REACT_APP_API_URL}/auth/login`);
+    
     try {
       /*const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/login`, {
         method: 'POST',
@@ -46,10 +46,11 @@ const Auth: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });*/
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/health`, {
+      const url = "http://hroptenv.eba-xunhtune.us-east-1.elasticbeanstalk.com/auth/health";
+      console.log(url);
+      const response = await fetch(url, {
         method: 'GET',
-        credentials: 'include', // VERY important
-        referrerPolicy: "unsafe-url", // Allow mixed content
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
       });
 
