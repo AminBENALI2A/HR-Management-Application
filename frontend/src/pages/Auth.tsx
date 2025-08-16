@@ -39,12 +39,18 @@ const Auth: React.FC = () => {
     console.log('Email:', email);
     console.log(`${process.env.REACT_APP_API_URL}/auth/login`);
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/login`, {
+      /*const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/login`, {
         method: 'POST',
         credentials: 'include', // VERY important
         referrerPolicy: "unsafe-url", // Allow mixed content
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
+      });*/
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/health`, {
+        method: 'GET',
+        credentials: 'include', // VERY important
+        referrerPolicy: "unsafe-url", // Allow mixed content
+        headers: { 'Content-Type': 'application/json' },
       });
 
       if (!response.ok) {
@@ -53,6 +59,7 @@ const Auth: React.FC = () => {
       }
 
       const res: LoginResponse = await response.json();
+      console.log('Login response:', res);
       const data = res.status;
 
       console.log('User logged in:', data);
