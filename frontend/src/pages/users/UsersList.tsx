@@ -287,7 +287,7 @@ const UsersList: React.FC = () => {
                     <button
                       className={`btn btn-sm ${user.active ? "btn-outline-danger" : "btn-outline-success"}`}
                       onClick={() => handleToggleActive(user.email, user.active)}
-                      disabled={editUserId !== null}
+                      disabled={editUserId !== null || user.role === "Super Admin"}
                     >
                       {user.active ? "Deactivate" : "Activate"}
                     </button>
