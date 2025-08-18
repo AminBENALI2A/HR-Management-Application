@@ -44,8 +44,12 @@ const CreatePartnerForm: React.FC<CreatePartnerFormProps> = ({ onSuccess, onCanc
 
   // Fonctions utilitaires pour la validation - MÊME LOGIQUE PARTOUT
   const getValidContacts = (contacts: Contact[]) => {
-    return contacts.filter((c) => c.nom.trim() || c.prenom.trim() || c.email.trim());
-  };
+    return contacts.filter((c) => 
+        c.nom?.trim() && 
+        c.prenom?.trim() && 
+        (c.email?.trim() || c.telephone?.trim())
+    );
+};
 
   const getValidActivities = (activities: string[]) => {
     return activities.filter((a) => a.trim().length > 0);
@@ -53,7 +57,6 @@ const CreatePartnerForm: React.FC<CreatePartnerFormProps> = ({ onSuccess, onCanc
 
   // Validation du formulaire avec suppression correcte des erreurs globales
 const validateForm = useCallback((values: PartnerFormData) => {
-  console.log("Validating form with values:", values);
   const newErrors: PartnerFormErrors = {};
 
   // Nom société
@@ -84,7 +87,7 @@ const validateForm = useCallback((values: PartnerFormData) => {
   
   // IMPORTANT: Ajouter l'erreur globale seulement si aucun contact valide
   if (validContacts.length === 0) {
-    newErrors.contacts = "At least one contact with name or email is required";
+    newErrors.contacts = "At least one contact with full name and email or phone is required";
   }
   // SINON: ne pas ajouter l'erreur (elle sera supprimée automatiquement)
 
@@ -126,23 +129,14 @@ const validateForm = useCallback((values: PartnerFormData) => {
 
   // Validation individuelle des activités
   values.activites.forEach((activity, index) => {
-    if (activity.trim().length > 0 && !validateName(activity)) {
-      newErrors[`activity_${index}`] = "Please enter a valid activity";
+    if (!validateName(activity)) {
+      newErrors.activites = "Please enter at least one valid activity";
+      newErrors[`activity ${index+1}`] = "Activity not valid";
     }
   });
 
-  /*/ Debug pour voir exactement ce qui se passe dans la validation
-  console.log('Validation debug:', {
-    validContacts: validContacts.length,
-    validActivities: validActivities.length,
-    newErrors: Object.keys(newErrors),
-    hasContactsError: !!newErrors.contacts,
-    hasActivitiesError: !!newErrors.activites
-  });
-  */
-
   return newErrors;
-}, [getValidContacts, getValidActivities]);
+}, []);
 
   const {
     values: formData,
@@ -178,30 +172,38 @@ const validateForm = useCallback((values: PartnerFormData) => {
     handleChange(e);
     setTouched((prev) => ({ ...prev, [name]: true }));
   };
+const validateContact = (contact: Contact): boolean => {
+  // Validate required fields
+  if (!validateName(contact.nom)) return false;
+  if (!validateName(contact.prenom)) return false;
+  if (!contact.email && !contact.telephone) return false;
+  // Validate email format if provided
+  if (contact.email && !validateEmail(contact.email)) return false;
+  
+  // Validate phone if provided
+  if (contact.telephone && !validatePhone(contact.telephone)) return false;
 
+  return true;
+};
   // États de validation - MÊME LOGIQUE que dans validateForm
-  const hasValidContacts = useMemo(() => {
+const hasValidContacts = useMemo(() => {
   const validContacts = getValidContacts(formData.contacts);
-  return validContacts.length > 0;
-}, [formData.contacts, formData.contacts.length, formData.contacts.map(c => [c.nom, c.prenom].join(',')).join(',')]); // Add length as dependency
+  return validContacts.length > 0 && validContacts.every(contact => 
+    validateContact(contact) // Assuming you have a `validateContact` function
+  );
+}, [formData.contacts, validateContact,formData.contacts.map(c => [c.nom, c.prenom, c.telephone, c.email].join(',')).join(',')]); // Only the array reference is needed
+
 
 const hasValidActivities = useMemo(() => {
   const validActivities = getValidActivities(formData.activites);
-  return validActivities.length > 0;
-}, [formData.activites, formData.activites.length, formData.activites.join(',')]); // Add length as dependency
+  return validActivities.length > 0 && validActivities.every(activity => validateName(activity));
+}, [formData.activites.join(',')]); // Note the quotes around the comma
 
   // Vérification de validité globale
   const isValid = useMemo(() => {
     const hasErrors = Object.keys(errors).length > 0;
     const hasContacts = getValidContacts(formData.contacts).length > 0;
     const hasActivities = getValidActivities(formData.activites).length > 0;
-    
-    console.log('Validation check:', {
-      hasErrors,
-      hasContacts,
-      hasActivities,
-      isValid: !hasErrors && hasContacts && hasActivities
-    });
     
     return !hasErrors && hasContacts && hasActivities;
   }, [
@@ -248,7 +250,6 @@ const hasValidActivities = useMemo(() => {
   };
 //update
   const updateContact = (index: number, field: string, value: string) => {
-  console.log("Updating contact:", index, field, "with value:", value);
   
   // Create a synthetic event for handleChange
   const fieldName = `contacts[${index}].${field}`;
@@ -301,7 +302,6 @@ const hasValidActivities = useMemo(() => {
   };
 
   const updateActivity = (index: number, value: string) => {
-  console.log("Updating activity:", index, "with value:", value);
   
   // Create a synthetic event for handleChange
   const fieldName = `activites[${index}]`; // Note: "activites" spelling must match your form state
@@ -319,7 +319,6 @@ const hasValidActivities = useMemo(() => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isValid) {
-      console.log('Form submission blocked - form is not valid');
       return;
     }
 

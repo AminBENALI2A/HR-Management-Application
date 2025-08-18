@@ -65,7 +65,11 @@ export class AuthService {
         }
     };
     }
-
+  async logout(userId: number, res: Response) {
+    res.clearCookie('access_token');
+    console.log('User logged out:', userId);
+    return { message: 'Logout successful' };
+  }
 
   async forgotPassword(email: string) {
         const user = await this.usersRepository.findOneBy({ email });

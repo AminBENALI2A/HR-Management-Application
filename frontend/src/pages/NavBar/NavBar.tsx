@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { withAuth } from "../../hoc/withAuth";
+import { API_BASE_URL } from "../../utils/config";
 
 interface NavbarProps {
   onToggle: (isCollapsed: boolean) => void;
@@ -10,6 +11,8 @@ const Navbar: React.FC<NavbarProps> = ({ onToggle }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [managementOpen, setManagementOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+
 
   const toggleCollapse = () => {
     const newState = !isCollapsed;
@@ -27,6 +30,40 @@ const Navbar: React.FC<NavbarProps> = ({ onToggle }) => {
   const isActiveRoute = (path: string) => {
     return location.pathname === path;
   };
+
+  async function handleLogout(event: React.MouseEvent<HTMLButtonElement>): Promise<void> {
+    event.preventDefault();
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        console.log("Successful logout");
+        // Clear any client-side state if needed
+        // localStorage.removeItem('user'); // if you store user data
+        // sessionStorage.clear(); // if you use session storage
+        
+        navigate("/auth");
+      } else {
+        // Handle specific error responses
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Logout failed:", errorData.message || response.statusText);
+        
+        // Still navigate to login on server errors (optional)
+        navigate("/auth");
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Optionally still redirect on network errors
+      navigate("/auth");
+    }
+  }
 
   return (
     <div
@@ -362,6 +399,7 @@ const Navbar: React.FC<NavbarProps> = ({ onToggle }) => {
                   onMouseLeave={(e) => {
                     e.currentTarget.style.backgroundColor = "transparent";
                   }}
+                  onClick={handleLogout}
                 >
                   <i className="bi bi-box-arrow-right me-2" style={{ fontSize: "14px" }}></i>
                   Sign out

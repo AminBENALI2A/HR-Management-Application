@@ -54,4 +54,11 @@ export class AuthController {
       },
     };
   }
+
+  @Post('logout')
+  @UseGuards(AuthGuard)
+  async logout(@Req() req: AuthenticatedRequest, @Res({ passthrough: true }) res: Response) {
+    console.log('Logging out user:', req.user.id);
+    return this.authService.logout(req.user.id, res);
+  }
 }

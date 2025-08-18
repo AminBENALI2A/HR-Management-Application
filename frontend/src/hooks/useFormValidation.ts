@@ -11,8 +11,7 @@ export function useFormValidation<T>(
 
   // Helper to deeply update nested fields (e.g., 'contacts[0].nom')
   const updateNestedField = <T>(obj: T, path: string, value: any): T => {
-    console.log("Updating nested field:", path, "with value:", value);
-    const keys = path.split(/[\.\[\]]/).filter(Boolean);
+    const keys = path.split(/[.[\]]/).filter(Boolean);
     const newObj = { ...obj };
 
     let current: any = newObj;
@@ -30,7 +29,6 @@ export function useFormValidation<T>(
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    console.log("handleChange:", name, "with value:", value);
     const newValues = name.includes('[') || name.includes('.')
       ? updateNestedField(values, name, value)
       : { ...values, [name]: value };
