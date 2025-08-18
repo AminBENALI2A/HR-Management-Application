@@ -260,9 +260,9 @@ const Navbar: React.FC<NavbarProps> = ({ onToggle }) => {
       >
         {!isCollapsed ? (
           <div className="dropdown p-3">
-            <a
-              href="#"
-              className="d-flex align-items-center text-decoration-none dropdown-toggle"
+            <button
+              type="button"
+              className="d-flex align-items-center text-decoration-none dropdown-toggle border-0 bg-transparent w-100"
               data-bs-toggle="dropdown"
               style={{
                 color: "#374151",
@@ -293,7 +293,7 @@ const Navbar: React.FC<NavbarProps> = ({ onToggle }) => {
               <span style={{ fontWeight: "500", fontSize: "0.925rem" }}>Admin User</span>
               <span style={{ fontSize: "0.8rem", color: "#9ca3af" }}>Administrator</span>
             </div>
-            </a>
+            </button>
             <ul 
               className="dropdown-menu dropdown-menu-end shadow-lg border-0"
               style={{
@@ -304,9 +304,9 @@ const Navbar: React.FC<NavbarProps> = ({ onToggle }) => {
               }}
             >
               <li>
-                <a 
-                  className="dropdown-item rounded-2" 
-                  href="#"
+                <button 
+                  type="button"
+                  className="dropdown-item rounded-2 border-0 bg-transparent w-100 text-start" 
                   style={{
                     padding: "0.625rem 0.75rem",
                     fontSize: "0.875rem",
@@ -322,12 +322,12 @@ const Navbar: React.FC<NavbarProps> = ({ onToggle }) => {
                 >
                   <i className="bi bi-person me-2" style={{ fontSize: "14px" }}></i>
                   Profile
-                </a>
+                </button>
               </li>
               <li>
-                <a 
-                  className="dropdown-item rounded-2" 
-                  href="#"
+                <button 
+                  type="button"
+                  className="dropdown-item rounded-2 border-0 bg-transparent w-100 text-start" 
                   style={{
                     padding: "0.625rem 0.75rem",
                     fontSize: "0.875rem",
@@ -343,13 +343,13 @@ const Navbar: React.FC<NavbarProps> = ({ onToggle }) => {
                 >
                   <i className="bi bi-gear me-2" style={{ fontSize: "14px" }}></i>
                   Settings
-                </a>
+                </button>
               </li>
               <li><hr className="dropdown-divider my-2" style={{ borderColor: "#f3f4f6" }} /></li>
               <li>
-                <a 
-                  className="dropdown-item rounded-2" 
-                  href="#"
+                <button 
+                  type="button"
+                  className="dropdown-item rounded-2 border-0 bg-transparent w-100 text-start" 
                   style={{
                     padding: "0.625rem 0.75rem",
                     fontSize: "0.875rem",
@@ -365,7 +365,7 @@ const Navbar: React.FC<NavbarProps> = ({ onToggle }) => {
                 >
                   <i className="bi bi-box-arrow-right me-2" style={{ fontSize: "14px" }}></i>
                   Sign out
-                </a>
+                </button>
               </li>
             </ul>
           </div>
