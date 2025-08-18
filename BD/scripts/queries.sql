@@ -57,6 +57,10 @@ SET telephone = '+212767148331',
 WHERE nom = 'Admin';
 
 
+DELETE FROM users
+WHERE email = 'aminBENALI2003@hotmail.com';
+
+
 INSERT INTO users (nom, prenom, email, telephone, role, password_hash)
 VALUES 
   ('Benali', 'Amine', 'amine.benali@example.com', '+212600000001', 'Ressource', '$2a$12$laSYKxwnp2sSMcpAwwJwfufj0jqa882itavWMMddellSIvSiz8lYm'),

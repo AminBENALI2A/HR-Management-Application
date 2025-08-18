@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { withAuth } from "../../hoc/withAuth";
 
 interface NavbarProps {
@@ -9,6 +9,7 @@ interface NavbarProps {
 const Navbar: React.FC<NavbarProps> = ({ onToggle }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [managementOpen, setManagementOpen] = useState(false);
+  const location = useLocation();
 
   const toggleCollapse = () => {
     const newState = !isCollapsed;
@@ -16,73 +17,376 @@ const Navbar: React.FC<NavbarProps> = ({ onToggle }) => {
     onToggle(newState);
   };
 
+  // Close management dropdown when navbar is collapsed
+  useEffect(() => {
+    if (isCollapsed) {
+      setManagementOpen(false);
+    }
+  }, [isCollapsed]);
+
+  const isActiveRoute = (path: string) => {
+    return location.pathname === path;
+  };
+
   return (
-    <div className={`d-flex flex-column flex-shrink-0 p-3 bg-light ${isCollapsed ? 'collapsed-nav' : ''}`} 
-         style={{ width: isCollapsed ? '80px' : '280px', minHeight: '100vh', transition: 'width 0.3s ease' }}>
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        {!isCollapsed && <span className="fs-4 fw-bold">Management System</span>}
-        <button 
+    <div
+      className={`d-flex flex-column flex-shrink-0 bg-white ${
+        isCollapsed ? "collapsed-nav" : ""
+      }`}
+      style={{
+        width: isCollapsed ? "80px" : "280px",
+        minHeight: "100vh",
+        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+        borderRight: "1px solid #e5e7eb",
+        boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)",
+      }}
+    >
+      {/* Header */}
+      <div 
+        className="d-flex justify-content-between align-items-center border-bottom"
+        style={{
+          padding: "1.5rem 1.25rem",
+          borderBottom: "1px solid #f3f4f6",
+          backgroundColor: "#fafafa",
+        }}
+      >
+        {!isCollapsed && (
+          <div className="d-flex align-items-center">
+            <div 
+              className="rounded-2 me-2 d-flex align-items-center justify-content-center"
+              style={{
+                width: "32px",
+                height: "32px",
+                backgroundColor: "#3b82f6",
+              }}
+            >
+              <i className="bi bi-grid-3x3-gap-fill text-white" style={{ fontSize: "14px" }}></i>
+            </div>
+            <span 
+              className="fw-semibold"
+              style={{ 
+                fontSize: "1.1rem",
+                color: isCollapsed ? "#9ca3af" : "#1f2937",
+                letterSpacing: "-0.025em",
+                transition: "color 0.2s ease"
+              }}
+            >
+              Dashboard
+            </span>
+          </div>
+        )}
+        <button
           onClick={toggleCollapse}
-          className="btn btn-sm btn-outline-secondary"
-          style={{ marginLeft: isCollapsed ? '0' : 'auto' }}
+          className="btn p-2 rounded-2"
+          style={{
+            border: "1px solid #e5e7eb",
+            backgroundColor: "white",
+            color: "#6b7280",
+            width: "36px",
+            height: "36px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            transition: "all 0.2s ease",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "#f9fafb";
+            e.currentTarget.style.borderColor = "#d1d5db";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "white";
+            e.currentTarget.style.borderColor = "#e5e7eb";
+          }}
         >
-          {isCollapsed ? '→' : '←'}
+          <i 
+            className={`bi ${isCollapsed ? "bi-chevron-right" : "bi-chevron-left"}`}
+            style={{ fontSize: "14px" }}
+          ></i>
         </button>
       </div>
-      <hr />
-      <ul className="nav nav-pills flex-column mb-auto">
-        <li className="nav-item">
-          <div 
-            className={`nav-link d-flex align-items-center ${managementOpen ? 'active' : ''}`}
-            style={{ cursor: 'pointer' }}
-            onClick={() => setManagementOpen(!managementOpen)}
-          >
-            <i className="bi bi-people-fill me-2"></i>
-            {!isCollapsed && (
-              <>
-                <span>Management</span>
-                <i className={`bi bi-chevron-${managementOpen ? 'down' : 'right'} ms-auto`}></i>
-              </>
-            )}
-          </div>
-          {!isCollapsed && managementOpen && (
-            <ul className="nav flex-column ps-4">
+
+      {/* Navigation */}
+      <div className="flex-grow-1" style={{ padding: "1.5rem 1rem" }}>
+        <nav>
+          <ul className="nav flex-column" style={{ gap: "0.25rem" }}>
+            <li className="nav-item">
+              <div
+                className={`nav-link d-flex align-items-center rounded-2 ${
+                  managementOpen ? "" : ""
+                }`}
+                style={{
+                  cursor: isCollapsed ? "default" : "pointer",
+                  padding: "0.75rem",
+                  color: isCollapsed ? "#9ca3af" : "#374151",
+                  fontWeight: "500",
+                  fontSize: "0.925rem",
+                  transition: "all 0.2s ease",
+                  border: "none",
+                  backgroundColor: (isCollapsed || !managementOpen) ? "transparent" : "#f3f4f6",
+                  pointerEvents: isCollapsed ? "none" : "auto",
+                }}
+                onClick={() => !isCollapsed && setManagementOpen(!managementOpen)}
+                onMouseEnter={(e) => {
+                  if (!managementOpen && !isCollapsed) {
+                    e.currentTarget.style.backgroundColor = "#f9fafb";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isCollapsed) {
+                    e.currentTarget.style.backgroundColor = managementOpen ? "#f3f4f6" : "transparent";
+                  }
+                }}
+              >
+                <div 
+                  className="rounded-1 me-3 d-flex align-items-center justify-content-center"
+                  style={{
+                    width: "20px",
+                    height: "20px",
+                    backgroundColor: isCollapsed ? "#e5e7eb" : (managementOpen ? "#3b82f6" : "#e5e7eb"),
+                    transition: "all 0.2s ease",
+                  }}
+                >
+                  <i 
+                    className="bi bi-people-fill" 
+                    style={{ 
+                      fontSize: "11px",
+                      color: isCollapsed ? "#9ca3af" : (managementOpen ? "white" : "#6b7280")
+                    }}
+                  ></i>
+                </div>
+                {!isCollapsed && (
+                  <>
+                    <span style={{ flex: 1 }}>Management</span>
+                    <i
+                      className={`bi bi-chevron-${managementOpen ? "down" : "right"}`}
+                      style={{ 
+                        fontSize: "12px",
+                        color: isCollapsed ? "#d1d5db" : "#9ca3af",
+                        transition: "transform 0.2s ease"
+                      }}
+                    ></i>
+                  </>
+                )}
+              </div>
+              
+              {!isCollapsed && managementOpen && (
+                <ul 
+                  className="nav flex-column mt-1"
+                  style={{ 
+                    paddingLeft: "2rem",
+                    gap: "0.125rem"
+                  }}
+                >
+                  <li>
+                    <Link 
+                      to="/users" 
+                      className={`nav-link rounded-2 d-flex align-items-center ${
+                        isActiveRoute("/users") ? "active" : ""
+                      }`}
+                      style={{
+                        padding: "0.625rem 0.75rem",
+                        color: isActiveRoute("/users") ? "#3b82f6" : "#6b7280",
+                        backgroundColor: isActiveRoute("/users") ? "#eff6ff" : "transparent",
+                        fontWeight: isActiveRoute("/users") ? "500" : "400",
+                        fontSize: "0.875rem",
+                        transition: "all 0.2s ease",
+                        textDecoration: "none",
+                        border: isActiveRoute("/users") ? "1px solid #dbeafe" : "1px solid transparent",
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isActiveRoute("/users")) {
+                          e.currentTarget.style.backgroundColor = "#f9fafb";
+                          e.currentTarget.style.color = "#374151";
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isActiveRoute("/users")) {
+                          e.currentTarget.style.backgroundColor = "transparent";
+                          e.currentTarget.style.color = "#6b7280";
+                        }
+                      }}
+                    >
+                      <i className="bi bi-person-lines-fill me-2" style={{ fontSize: "14px" }}></i>
+                      Users Management
+                    </Link>
+                  </li>
+                  <li>
+                    <Link 
+                      to="/partenaires" 
+                      className={`nav-link rounded-2 d-flex align-items-center ${
+                        isActiveRoute("/partenaires") ? "active" : ""
+                      }`}
+                      style={{
+                        padding: "0.625rem 0.75rem",
+                        color: isActiveRoute("/partenaires") ? "#3b82f6" : "#6b7280",
+                        backgroundColor: isActiveRoute("/partenaires") ? "#eff6ff" : "transparent",
+                        fontWeight: isActiveRoute("/partenaires") ? "500" : "400",
+                        fontSize: "0.875rem",
+                        transition: "all 0.2s ease",
+                        textDecoration: "none",
+                        border: isActiveRoute("/partenaires") ? "1px solid #dbeafe" : "1px solid transparent",
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isActiveRoute("/partenaires")) {
+                          e.currentTarget.style.backgroundColor = "#f9fafb";
+                          e.currentTarget.style.color = "#374151";
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isActiveRoute("/partenaires")) {
+                          e.currentTarget.style.backgroundColor = "transparent";
+                          e.currentTarget.style.color = "#6b7280";
+                        }
+                      }}
+                    >
+                      <i className="bi bi-building me-2" style={{ fontSize: "14px" }}></i>
+                      Partners Management
+                    </Link>
+                  </li>
+                </ul>
+              )}
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+      {/* Profile Section */}
+      <div 
+        className="border-top"
+        style={{
+          borderTop: "1px solid #f3f4f6",
+          backgroundColor: "#fafafa",
+        }}
+      >
+        {!isCollapsed ? (
+          <div className="dropdown p-3">
+            <a
+              href="#"
+              className="d-flex align-items-center text-decoration-none dropdown-toggle"
+              data-bs-toggle="dropdown"
+              style={{
+                color: "#374151",
+                padding: "0.5rem",
+                borderRadius: "0.5rem",
+                transition: "all 0.2s ease",
+                cursor: "pointer",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#f3f4f6";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "transparent";
+              }}
+            >
+            <div 
+              className="rounded-circle me-3 d-flex align-items-center justify-content-center"
+              style={{
+                width: "40px",
+                height: "40px",
+                backgroundColor: "#e5e7eb",
+                color: "#6b7280",
+              }}
+            >
+              <i className="bi bi-person-fill" style={{ fontSize: "18px" }}></i>
+            </div>
+            <div className="d-flex flex-column">
+              <span style={{ fontWeight: "500", fontSize: "0.925rem" }}>Admin User</span>
+              <span style={{ fontSize: "0.8rem", color: "#9ca3af" }}>Administrator</span>
+            </div>
+            </a>
+            <ul 
+              className="dropdown-menu dropdown-menu-end shadow-lg border-0"
+              style={{
+                borderRadius: "0.75rem",
+                padding: "0.5rem",
+                marginTop: "0.5rem",
+                boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+              }}
+            >
               <li>
-                <Link to="/users" className="nav-link">
-                  <i className="bi bi-person-lines-fill me-2"></i>
-                  Users Management
-                </Link>
+                <a 
+                  className="dropdown-item rounded-2" 
+                  href="#"
+                  style={{
+                    padding: "0.625rem 0.75rem",
+                    fontSize: "0.875rem",
+                    color: "#374151",
+                    transition: "all 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "#f3f4f6";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }}
+                >
+                  <i className="bi bi-person me-2" style={{ fontSize: "14px" }}></i>
+                  Profile
+                </a>
               </li>
               <li>
-                <Link to="/partenaires" className="nav-link">
-                  <i className="bi bi-building me-2"></i>
-                  Partners Management
-                </Link>
+                <a 
+                  className="dropdown-item rounded-2" 
+                  href="#"
+                  style={{
+                    padding: "0.625rem 0.75rem",
+                    fontSize: "0.875rem",
+                    color: "#374151",
+                    transition: "all 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "#f3f4f6";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }}
+                >
+                  <i className="bi bi-gear me-2" style={{ fontSize: "14px" }}></i>
+                  Settings
+                </a>
+              </li>
+              <li><hr className="dropdown-divider my-2" style={{ borderColor: "#f3f4f6" }} /></li>
+              <li>
+                <a 
+                  className="dropdown-item rounded-2" 
+                  href="#"
+                  style={{
+                    padding: "0.625rem 0.75rem",
+                    fontSize: "0.875rem",
+                    color: "#dc2626",
+                    transition: "all 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "#fef2f2";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }}
+                >
+                  <i className="bi bi-box-arrow-right me-2" style={{ fontSize: "14px" }}></i>
+                  Sign out
+                </a>
               </li>
             </ul>
-          )}
-        </li>
-      </ul>
-      <hr />
-      {!isCollapsed && (
-        <div className="dropdown">
-          <a href="#" className="d-flex align-items-center text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">
-            <i className="bi bi-person-circle me-2"></i>
-            <strong>Admin</strong>
-          </a>
-          <ul className="dropdown-menu dropdown-menu-light text-small shadow">
-            <li><a className="dropdown-item" href="#">Profile</a></li>
-            <li><a className="dropdown-item" href="#">Settings</a></li>
-            <li><hr className="dropdown-divider" /></li>
-            <li><a className="dropdown-item" href="#">Sign out</a></li>
-          </ul>
-        </div>
-      )}
-      {isCollapsed && (
-        <div className="text-center">
-          <i className="bi bi-person-circle fs-4"></i>
-        </div>
-      )}
+          </div>
+        ) : (
+          <div className="text-center p-3">
+            <div 
+              className="rounded-circle d-inline-flex align-items-center justify-content-center"
+              style={{
+                width: "36px",
+                height: "36px",
+                backgroundColor: "#e5e7eb",
+                color: "#6b7280",
+                cursor: "default",
+                pointerEvents: "none",
+              }}
+            >
+              <i className="bi bi-person-fill" style={{ fontSize: "16px" }}></i>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
