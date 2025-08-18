@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { withAuth } from "../hoc/withAuth";
+import { withAuth } from "../../hoc/withAuth";
 import CreateUserForm from "./CreateUserForm";
-import { useFormValidation } from "../hooks/useFormValidation";
-import { validateEmail, validateName, validatePhone } from "../utils/validators";
+import { useFormValidation } from "../../hooks/useFormValidation";
+import { validateEmail, validateName, validatePhone } from "../../utils/validators";
+import { API_BASE_URL } from "../../utils/config";
+import { useNavigate } from "react-router-dom";
 
 interface User {
   id: number;
@@ -11,6 +13,8 @@ interface User {
   email: string;
   telephone: string;
   role: string;
+  dateCreation: string;
+  dateModification: string;
   active: boolean;
 }
 
@@ -23,7 +27,7 @@ const UsersList: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [roleFilter, setRoleFilter] = useState("");
   const [activeFilter, setActiveFilter] = useState("");
-
+  const navigate = useNavigate();
   // Hook for edit form validation
   const {
     values: editForm,
@@ -80,11 +84,12 @@ const UsersList: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`https://d1pc059cxwtfw0.cloudfront.net/api/users`, {
-        credentials: "include",
-        referrerPolicy: "unsafe-url" 
+      const res = await fetch(`${API_BASE_URL}/users`, {
+        credentials: "include"
       });
-      if (!res.ok) throw new Error("Failed to load users");
+      if (!res.ok) {
+        navigate('/auth');
+      }
       const data = await res.json();
 
       const sortedUsers = [...data.users].sort((a, b) => {
@@ -109,10 +114,9 @@ const UsersList: React.FC = () => {
 
   const handleToggleActive = async (email: string, active: boolean) => {
     try {
-      const res = await fetch(`https://d1pc059cxwtfw0.cloudfront.net/api/users/status`, {
+      const res = await fetch(`${API_BASE_URL}/users/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        referrerPolicy: "unsafe-url",
         credentials: "include",
         body: JSON.stringify({ email: email , active: !active })
       });
@@ -132,11 +136,10 @@ const UsersList: React.FC = () => {
   const handleSave = async () => {
     if (!isValid) return;
     try {
-      const res = await fetch(`https://d1pc059cxwtfw0.cloudfront.net/api/users/editUser`, {
+      const res = await fetch(`${API_BASE_URL}/users/editUser`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        referrerPolicy: "unsafe-url",
         body: JSON.stringify(editForm)
       });
       if (!res.ok) throw new Error("Failed to save changes");
@@ -197,6 +200,7 @@ const UsersList: React.FC = () => {
           <select
             className="form-select"
             style={{ maxWidth: 200 }}
+            value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
             disabled={loading || editUserId !== null}
           >
@@ -208,6 +212,7 @@ const UsersList: React.FC = () => {
           <select
             className="form-select"
             style={{ maxWidth: 200 }}
+            value={activeFilter}
             onChange={(e) => setActiveFilter(e.target.value)}
             disabled={loading || editUserId !== null}
           >
@@ -215,7 +220,6 @@ const UsersList: React.FC = () => {
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
           </select>
-
         </div>
         <button className="btn btn-primary" onClick={() => setShowCreateModal(true)} disabled={loading || editUserId !== null}>
           + Add User
@@ -228,10 +232,11 @@ const UsersList: React.FC = () => {
         <table className="table table-striped">
           <thead>
             <tr>
-              <th>Nom et Prénom</th>
+              <th>Name</th>
               <th>Email</th>
-              <th>Téléphone</th>
-              <th>Role</th>
+              <th>Phone</th>
+              <th>Creation Date</th>
+              <th>Last Modified</th>
               <th>Status</th>
               <th style={{ width: 200 }}>Actions</th>
             </tr>
@@ -239,11 +244,31 @@ const UsersList: React.FC = () => {
           <tbody>
             {filteredUsers.map((user) => (
               <React.Fragment key={user.id}>
+                {/* Main Row */}
                 <tr>
-                  <td>{user.nom} {user.prenom}</td>
+                  <td>
+                    <div>
+                      <strong>{user.prenom} {user.nom}</strong>
+                      <div className="text-muted small mt-1">
+                        <span className={`badge ${
+                          user.role === 'Super Admin' ? 'bg-danger' :
+                          user.role === 'Gestionnaire' ? 'bg-warning' :
+                          'bg-info'
+                        } small`}>
+                          {user.role}
+                        </span>
+                      </div>
+                    </div>
+                  </td>
                   <td>{user.email}</td>
                   <td>{user.telephone}</td>
-                  <td>{user.role}</td>
+                  
+                  <td className="text-muted small">
+                    {new Date(user.dateCreation).toLocaleDateString()}
+                  </td>
+                  <td className="text-muted small">
+                    {new Date(user.dateModification).toLocaleDateString()}
+                  </td>
                   <td>
                     {user.active ? (
                       <span className="badge bg-success">Active</span>
@@ -269,69 +294,76 @@ const UsersList: React.FC = () => {
                   </td>
                 </tr>
 
+                {/* Edit Form Row */}
                 {editUserId === user.id && (
                   <tr>
-                    <td colSpan={6}>
+                    <td colSpan={7}>
                       <div className="p-3 border rounded bg-light">
-                        <div className="mb-2">
-                          <label className="form-label">Prénom</label>
-                          <input
-                            type="text"
-                            name="prenom"
-                            className={`form-control ${errors.prenom ? "is-invalid" : ""}`}
-                            value={editForm.prenom || ""}
-                            onChange={handleChange}
-                          />
-                          {errors.prenom && <div className="invalid-feedback">{errors.prenom}</div>}
+                        <h6 className="mb-3">Edit User</h6>
+                        <div className="row">
+                          <div className="col-md-6 mb-2">
+                            <label className="form-label">Prénom</label>
+                            <input
+                              type="text"
+                              name="prenom"
+                              className={`form-control ${errors.prenom ? "is-invalid" : ""}`}
+                              value={editForm.prenom || ""}
+                              onChange={handleChange}
+                            />
+                            {errors.prenom && <div className="invalid-feedback">{errors.prenom}</div>}
+                          </div>
+                          <div className="col-md-6 mb-2">
+                            <label className="form-label">Nom</label>
+                            <input
+                              type="text"
+                              name="nom"
+                              className={`form-control ${errors.nom ? "is-invalid" : ""}`}
+                              value={editForm.nom || ""}
+                              onChange={handleChange}
+                            />
+                            {errors.nom && <div className="invalid-feedback">{errors.nom}</div>}
+                          </div>
                         </div>
-                        <div className="mb-2">
-                          <label className="form-label">Nom</label>
-                          <input
-                            type="text"
-                            name="nom"
-                            className={`form-control ${errors.nom ? "is-invalid" : ""}`}
-                            value={editForm.nom || ""}
-                            onChange={handleChange}
-                          />
-                          {errors.nom && <div className="invalid-feedback">{errors.nom}</div>}
+
+                        <div className="row">
+                          <div className="col-md-6 mb-2">
+                            <label className="form-label">Email</label>
+                            <input
+                              type="email"
+                              name="email"
+                              className={`form-control ${errors.email ? "is-invalid" : ""}`}
+                              value={editForm.email || ""}
+                              onChange={handleChange}
+                              disabled={true}
+                            />
+                            {errors.email && <div className="invalid-feedback">{errors.email}</div>}
+                          </div>
+                          <div className="col-md-6 mb-2">
+                            <label className="form-label">Téléphone</label>
+                            <input
+                              type="text"
+                              name="telephone"
+                              className={`form-control ${errors.telephone ? "is-invalid" : ""}`}
+                              value={editForm.telephone || ""}
+                              onChange={handleChange}
+                            />
+                            {errors.telephone && <div className="invalid-feedback">{errors.telephone}</div>}
+                          </div>
                         </div>
-                        <div className="mb-2">
-                          <label className="form-label">Email</label>
-                          <input
-                            type="email"
-                            name="email"
-                            className={`form-control ${errors.email ? "is-invalid" : ""}`}
-                            value={editForm.email || ""}
-                            onChange={handleChange}
-                            disabled={true}
-                          />
-                          {errors.email && <div className="invalid-feedback">{errors.email}</div>}
-                        </div>
-                        <div className="mb-2">
-                          <label className="form-label">Téléphone</label>
-                          <input
-                            type="text"
-                            name="telephone"
-                            className={`form-control ${errors.telephone ? "is-invalid" : ""}`}
-                            value={editForm.telephone || ""}
-                            onChange={handleChange}
-                          />
-                          {errors.telephone && <div className="invalid-feedback">{errors.telephone}</div>}
-                        </div>
-                        <div className="mb-2">
+
+                        <div className="mb-3">
                           <label htmlFor="role" className="form-label">Role</label>
                           <select
                             id="role"
                             name="role"
                             className={`form-select`}
-                            value={editForm.role || "User"}
+                            value={editForm.role || "Ressource"}
                             onChange={handleChange}
                           >
                             <option value="Ressource">Ressource</option>
                             <option value="Gestionnaire">Gestionnaire</option>
                             <option value="Super Admin">Super Admin</option>
                           </select>
-                        
                         </div>
 
                         <div className="mt-3">
@@ -358,7 +390,7 @@ const UsersList: React.FC = () => {
 
             {filteredUsers.length === 0 && (
               <tr>
-                <td colSpan={6} className="text-center">
+                <td colSpan={7} className="text-center">
                   No users found
                 </td>
               </tr>

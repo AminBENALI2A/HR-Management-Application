@@ -4,11 +4,12 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { Users } from '../../entities/Users';
-import { LoginDto } from '../../dto/login.dto';
+import { LoginDto } from '../../dto/auth.dto/login.dto';
 import type { Response } from 'express';
 import { randomBytes } from 'crypto';
 import { PasswordResetService } from './password-reset.service';
 import { MailService } from '../mail/mail.service';
+import { API_BASE_URL } from '../../config';
 
 @Injectable()
 export class AuthService {
@@ -26,22 +27,25 @@ export class AuthService {
     console.log('Logging in...');
     const user = await this.usersRepository.findOneBy({ email: loginDto.email });
     if (!user) {
+      console.log('User not found:', loginDto.email);
       throw new UnauthorizedException('Invalid email or password');
     }
 
     const passwordValid = await bcrypt.compare(loginDto.password, user.passwordHash);
     if (!passwordValid) {
+      console.log('Invalid password for user:', user.email);
       throw new UnauthorizedException('Invalid email or password');
     }
 
     if (!user.active) {
+      console.log('User is inactive:', user.email);
       throw new UnauthorizedException('Invalid email or password');
     }
     console.log('Found user:', user.email);
 
     // Create JWT payload with relevant info
-    const payload = { sub: user.id, email: user.email};
-   
+    const payload = { sub: user.id, email: user.email, active: user.active };
+
     res.cookie('access_token', this.jwtService.sign(payload), {
         httpOnly: true,       // Not accessible by JavaScript
         secure: true,         // Only over HTTPS
@@ -66,15 +70,16 @@ export class AuthService {
   async forgotPassword(email: string) {
         const user = await this.usersRepository.findOneBy({ email });
         if (!user) {
-        return { message: 'If that account exists, we sent a password reset email.' };
+          console.log('User not found for email:', email);
+          return { message: 'If that account exists, we sent a password reset email.' };
         }
-
         const rawToken = randomBytes(32).toString('hex');
         const expiresAt = Date.now() + 15 * 60 * 1000;
 
         await this.passwordResetService.create(user.id, rawToken, expiresAt);
 
-        const resetUrl = `http://localhost:3001/reset-password?token=${rawToken}`;
+        const resetUrl = `${API_BASE_URL}/reset-password?token=${rawToken}`;
+
         await this.mailService.sendResetEmail(user.email, resetUrl);
 
         return { message: 'If that account exists, we sent a password reset email.' };

@@ -3,8 +3,8 @@ import { UsersService } from './users.service';
 import { AuthGuard } from '../../guards/auth.guard';
 import { RolesGuard } from '../../guards/roles.guard';
 import { Roles } from '../../guards/roles.decorator';
-import { CreateUserDto } from '../../dto/create-user.dto';
-import { EditUserDto } from '../../dto/edit-user.dto';
+import { CreateUserDto } from '../../dto/users.dto/create-user.dto';
+import { EditUserDto } from '../../dto/users.dto/edit-user.dto';
 
 @Controller('/api/users')
 @UseGuards(AuthGuard, RolesGuard)

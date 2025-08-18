@@ -22,9 +22,45 @@ export function withAuth<P extends object>(
       })();
     }, [navigate]);
 
-    if (loading) return <p>Checking authentication...</p>;
+    return (
+      <>
+        <WrappedComponent {...props} />
+        {loading && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            backgroundColor: 'rgba(0, 0, 0, 0.3)', // dim overlay
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 9999
+          }}>
+            <div className="spinner" />
+          </div>
+        )}
 
-    return <WrappedComponent {...props} />;
+        {/* Spinner CSS can go in a global CSS file */}
+        <style>
+          {`
+            .spinner {
+              border: 6px solid #f3f3f3;
+              border-top: 6px solid #3498db;
+              border-radius: 50%;
+              width: 40px;
+              height: 40px;
+              animation: spin 1s linear infinite;
+            }
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}
+        </style>
+      </>
+    );
   };
 
   return ProtectedComponent;

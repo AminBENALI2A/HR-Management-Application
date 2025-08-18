@@ -1,6 +1,7 @@
+import { API_BASE_URL } from "./config";
 
 async function checkAuth() {
-  const res = await fetch('https://d1pc059cxwtfw0.cloudfront.net/api/auth/session', {
+  const res = await fetch(`${API_BASE_URL}/auth/session`, {
     credentials: 'include', // sends the cookie to backend
   });
   

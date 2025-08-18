@@ -1,7 +1,7 @@
 import React from "react";
-import { withAuth } from "../hoc/withAuth";
-import { useFormValidation } from "../hooks/useFormValidation";
-import { validateEmail, validateName, validatePhone } from "../utils/validators";
+import { useFormValidation } from "../../hooks/useFormValidation";
+import { validateEmail, validateName, validatePhone } from "../../utils/validators";
+import { API_BASE_URL } from "../../utils/config";
 
 interface CreateUserFormProps {
   onSuccess: () => void;
@@ -28,10 +28,17 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel }) 
     setServerError(null);
     setLoading(true);
     try {
-      const res = await fetch(`https://d1pc059cxwtfw0.cloudfront.net/api/users/addUser`, {
+      console.log("Request body:", JSON.stringify({
+          prenom: values.firstName,
+          nom: values.lastName,
+          email: values.email,
+          telephone: values.phone,
+          role: values.role,
+        })
+      );
+      const res = await fetch(`${API_BASE_URL}/users/addUser`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        referrerPolicy: "unsafe-url",
         credentials: "include",
         body: JSON.stringify({
           prenom: values.firstName,
@@ -146,4 +153,4 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess, onCancel }) 
   );
 };
 
-export default withAuth(CreateUserForm);
+export default CreateUserForm;

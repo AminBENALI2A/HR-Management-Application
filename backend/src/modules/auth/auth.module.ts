@@ -20,9 +20,9 @@ import { PasswordResetService } from './password-reset.service';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET') || "a09a1618486172ff2338d24885361e72e72ae0520b9f024e1b4d7309290b55ded92a270446794e18d87d3c6056f6a837",
+        secret: configService.get<string>('JWT_SECRET'),
         signOptions: { 
-          expiresIn: configService.get<string>('JWT_EXPIRES_IN') || "1h" 
+          expiresIn: configService.get<string>('JWT_EXPIRES_IN') 
         },
       }),
     }),

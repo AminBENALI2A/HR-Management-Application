@@ -1,5 +1,5 @@
 import { Column, Entity, Index, PrimaryGeneratedColumn } from "typeorm";
-// typeorm-model-generator -h localhost -d hr_management -u admin -x adminpassword -e postgres -o ./src 
+
 @Index("users_email_key", ["email"], { unique: true })
 @Index("users_pkey", ["id"], { unique: true })
 @Entity("users", { schema: "public" })

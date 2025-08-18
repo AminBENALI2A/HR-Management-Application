@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Res, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LoginDto } from '../../dto/login.dto';
+import { LoginDto } from '../../dto/auth.dto/login.dto';
 import type { Response } from 'express';
 import { AuthGuard } from '../../guards/auth.guard';
 
@@ -11,6 +11,7 @@ export interface AuthenticatedRequest extends Request {
     id: number;
     email: string;
     role: string;
+    active: boolean;
   };
 }
 @Controller('/api/auth')
@@ -49,6 +50,7 @@ export class AuthController {
         id: req.user.id,
         email: req.user.email,
         role: req.user.role,
+        active: req.user.active,
       },
     };
   }

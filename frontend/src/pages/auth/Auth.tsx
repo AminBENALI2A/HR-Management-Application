@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../../utils/config';
 
 interface LoginResponse {
   message: string;
@@ -38,10 +39,9 @@ const Auth: React.FC = () => {
     console.log('Logging in...');
     
     try {
-      const response = await fetch(`https://d1pc059cxwtfw0.cloudfront.net/api/auth/login`, {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
-        credentials: 'include', // VERY important
-        referrerPolicy: "unsafe-url", // Allow mixed content
+        credentials: 'include', 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
@@ -78,11 +78,10 @@ const Auth: React.FC = () => {
     setForgotLoading(true);
 
     try {
-      const response = await fetch(`https://d1pc059cxwtfw0.cloudfront.net/api/auth/forgot-password`, {
+      const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: forgotEmail }),
-        referrerPolicy: "unsafe-url" 
+        body: JSON.stringify({ email: forgotEmail})
       });
 
       if (!response.ok) {

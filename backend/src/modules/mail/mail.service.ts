@@ -28,6 +28,7 @@ export class MailService {
         <p>If you didn’t request this, please ignore this email.</p>
       `,
     };
+    console.log('Sending reset email to:', to);
 
     return this.transporter.sendMail(mailOptions);
   }

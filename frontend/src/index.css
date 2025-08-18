@@ -12,13 +12,53 @@ html {
 body {
   padding-right: calc(100vw - 100%);
 }
-/* Optional: Style the always-visible scrollbar to match Bootstrap's aesthetic */
 
+
+/* Optional: Style the always-visible scrollbar to match Bootstrap's aesthetic */
 ::-webkit-scrollbar {
-  width: 12px;
-  background: #f1f1f1;
+  width: 8px;
+  height: 8px;
 }
+
+/* Track (background) */
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+/* Thumb (scrollbar handle) */
 ::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  transition: background 0.3s ease;
 }
+
+/* Thumb hover */
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Thumb when scrollbar is inactive */
+::-webkit-scrollbar-thumb:window-inactive {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+
+
+/* Navbar styles */
+.collapsed-nav .nav-link span,
+.collapsed-nav .fs-4,
+.collapsed-nav .dropdown-toggle strong {
+  display: none;
+}
+
+.collapsed-nav .nav-link {
+  justify-content: center;
+}
+
+.collapsed-nav .nav-link i {
+  margin-right: 0 !important;
+}
+
+/* Bootstrap icons */
+@import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css");

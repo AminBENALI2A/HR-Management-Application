@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom'; // assuming you use react-router
+import { Link, useNavigate } from 'react-router-dom'; // assuming you use react-router
+import { API_BASE_URL } from '../../utils/config';
+import { wait } from '@testing-library/user-event/dist/utils';
 
 const ResetPassword: React.FC = () => {
   const [token, setToken] = useState<string | null>(null);
@@ -8,6 +10,7 @@ const ResetPassword: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -38,7 +41,7 @@ const ResetPassword: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await fetch(`https://d1pc059cxwtfw0.cloudfront.net/api/auth/reset-password`, {
+      const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, newPassword: password }),
@@ -53,6 +56,8 @@ const ResetPassword: React.FC = () => {
       setSuccess('Password reset successful! You can now log in with your new password.');
       setPassword('');
       setConfirmPassword('');
+      wait(5000);
+      navigate('/auth');
     } catch (err: any) {
       setError(err.message || 'Something went wrong.');
     } finally {

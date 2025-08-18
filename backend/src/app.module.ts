@@ -6,6 +6,8 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { UsersModule } from './modules/users/users.module';
 import { Users } from './entities/Users';
 import { PasswordResetToken } from './entities/PasswordResetToken';
+import { PartenairesModule } from './modules/partenaires/partenaires.module';
+import { Partenaires } from './entities/Partenaires';
 
 @Module({
   imports: [
@@ -16,20 +18,19 @@ import { PasswordResetToken } from './entities/PasswordResetToken';
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'hr-management-optymum.cqbu0goc27gf.us-east-1.rds.amazonaws.com',
-      port: 5432,
-      username: 'hrmanagement',
-      password: 'hrmanagement',
-      database: 'hr_management',
-      entities: [Users, PasswordResetToken],
-      ssl: {
-        rejectUnauthorized: false
-      },
+      host: process.env.DB_HOST,
+      port: parseInt(process.env.DB_PORT || '5432', 10),
+      username: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
+      entities: [Users, PasswordResetToken, Partenaires],
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
       synchronize: false,
-      logging: true,
+      logging: process.env.NODE_ENV === 'development' ? true : ['error'],
     }),
     AuthModule,
-    UsersModule
+    UsersModule,
+    PartenairesModule
   ],
 })
 export class AppModule {}

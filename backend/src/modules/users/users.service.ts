@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Users } from '../../entities/Users';
-import { CreateUserDto } from '../../dto/create-user.dto';
+import { CreateUserDto } from '../../dto/users.dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
-import { EditUserDto } from '../../dto/edit-user.dto';
+import { EditUserDto } from '../../dto/users.dto/edit-user.dto';
 @Injectable()
 export class UsersService {
   constructor(
@@ -21,6 +21,8 @@ export class UsersService {
       telephone: user.telephone,
       role: user.role,
       active: user.active,
+      dateCreation: user.dateCreation.toISOString(),
+      dateModification: user.dateModification.toISOString(),
     }));
   }
 
