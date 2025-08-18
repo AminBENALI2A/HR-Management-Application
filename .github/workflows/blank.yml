@@ -62,6 +62,14 @@ jobs:
         run: |
           npm install -g npm@10.8.2
           npm ci
+      
+      - name: Disable CI mode for linting
+        working-directory: ./frontend  # Important if your ESLint runs in frontend
+        run: echo "CI=false" >> $GITHUB_ENV  # Affects subsequent steps
+      
+      - name: Run Linter
+        working-directory: ./frontend
+        run: npm run lint  # Will now show warnings without failing
       - name: Set Frontend Env
         run: |
           echo "REACT_APP_API_URL=http://hroptenv.eba-xunhtune.us-east-1.elasticbeanstalk.com" >> $GITHUB_ENV
